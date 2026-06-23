@@ -776,6 +776,20 @@
             localStorage.setItem('night_auth', JSON.stringify(auth));
         }
 
+        function showSignInError(msg) {
+            const errDiv = document.getElementById('signinError');
+            errDiv.textContent = msg;
+            errDiv.style.display = 'block';
+            setTimeout(() => { errDiv.style.display = 'none'; }, 4000);
+        }
+
+        function showForgotPassword() {
+            const email = prompt('Enter your email address to reset your password:');
+            if (email) {
+                alert('Password reset link sent to ' + email + '\n(Note: This is a demo. In production, an email would be sent.)');
+            }
+        }
+
         let isAdmin = false;
         let isGuest = false;
         let editingServiceId = null;
@@ -801,26 +815,26 @@
             }
         }
 
-        async function checkExistingSession() {
+        function checkExistingSession() {
             const auth = getAuth();
             if (auth.isLoggedIn && auth.role === 'admin') {
                 isAdmin = true;
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('adminPanel').classList.add('active');
                 document.getElementById('adminBadge').classList.remove('hidden');
-                await renderAdminServices();
+                renderAdminServices();
             } else if (auth.isLoggedIn && auth.role === 'guest') {
                 isGuest = true;
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('guestPanel').classList.add('active');
                 document.getElementById('guestBadge').classList.remove('hidden');
-                await renderGuestServices();
+                renderGuestServices();
             } else if (auth.isLoggedIn && auth.role === 'user') {
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('userPanel').classList.add('active');
                 document.getElementById('userDisplayName').textContent = auth.name || auth.username;
                 document.getElementById('userDisplayInfo').textContent = 'Username: ' + auth.username + ' | Role: Standard User';
-                await renderUserServices();
+                renderUserServices();
             }
         }
 
@@ -1035,43 +1049,47 @@
             `).join('');
         }
 
-        async function renderGuestServices() {
-            const services = await getServices();
-            const list = document.getElementById('guestServiceList');
-            list.innerHTML = services.map(s => `
-                <div class="service-item">
-                    <div class="service-info">
-                        <span class="service-icon">${s.icon}</span>
-                        <div class="service-details">
-                            <span class="service-name">${s.name}</span>
-                            <span class="service-desc">${s.desc}</span>
+        function renderGuestServices() {
+            getServices().then(services => {
+                const list = document.getElementById('guestServiceList');
+                if (!list) return;
+                list.innerHTML = services.map(s => `
+                    <div class="service-item">
+                        <div class="service-info">
+                            <span class="service-icon">${s.icon}</span>
+                            <div class="service-details">
+                                <span class="service-name">${s.name}</span>
+                                <span class="service-desc">${s.desc}</span>
+                            </div>
+                        </div>
+                        <div class="service-status-toggle">
+                            <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'};">${s.status.toUpperCase()}</span>
                         </div>
                     </div>
-                    <div class="service-status-toggle">
-                        <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'};">${s.status.toUpperCase()}</span>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            });
         }
 
-        async function renderUserServices() {
-            const services = await getServices();
-            const list = document.getElementById('userServiceList');
-            list.innerHTML = services.map(s => `
-                <div class="service-item" style="cursor: pointer;" onclick="handleUserServiceClick('${s.id}', '${s.name}')">
-                    <div class="service-info">
-                        <span class="service-icon">${s.icon}</span>
-                        <div class="service-details">
-                            <span class="service-name">${s.name}</span>
-                            <span class="service-desc">${s.desc}</span>
+        function renderUserServices() {
+            getServices().then(services => {
+                const list = document.getElementById('userServiceList');
+                if (!list) return;
+                list.innerHTML = services.map(s => `
+                    <div class="service-item" style="cursor: pointer;" onclick="handleUserServiceClick('${s.id}', '${s.name}')">
+                        <div class="service-info">
+                            <span class="service-icon">${s.icon}</span>
+                            <div class="service-details">
+                                <span class="service-name">${s.name}</span>
+                                <span class="service-desc">${s.desc}</span>
+                            </div>
+                        </div>
+                        <div class="service-status-toggle">
+                            <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'};">${s.status.toUpperCase()}</span>
+                            ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">→ Click to Access</span>' : ''}
                         </div>
                     </div>
-                    <div class="service-status-toggle">
-                        <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'};">${s.status.toUpperCase()}</span>
-                        ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">→ Click to Access</span>' : ''}
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            });
         }
 
         async function handleUserServiceClick(id, name) {
@@ -1241,13 +1259,13 @@
         });
 
         // Poll for updates every 3 seconds for real-time sync
-        setInterval(async () => {
+        setInterval(() => {
             if (document.visibilityState === 'visible') {
-                await renderPublicServices();
-                if (isAdmin) await renderAdminServices();
-                if (isGuest) await renderGuestServices();
+                renderPublicServices();
+                if (isAdmin) renderAdminServices();
+                if (isGuest) renderGuestServices();
                 const auth = getAuth();
-                if (auth.isLoggedIn && auth.role === 'user') await renderUserServices();
+                if (auth.isLoggedIn && auth.role === 'user') renderUserServices();
             }
         }, 3000);
 
