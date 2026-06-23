@@ -514,6 +514,7 @@ createParticles();
 
 // Auto-hide welcome after 1 second
 setTimeout(async function() {
+  await forceRefreshFromAPI();
   const services = await getServices();
   const platform = services.find(s => s.id === PLATFORM_ID);
   const auth = getAuth();
@@ -531,6 +532,11 @@ setTimeout(async function() {
 // ==================== ADMIN PANEL INTEGRATION ====================
 const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
 const PLATFORM_ID = 'night-ai';
+
+async function forceRefreshFromAPI() {
+    localStorage.removeItem('night_services');
+    return await getServices();
+}
 
 async function getServices() {
   try {
@@ -645,10 +651,10 @@ function handleAuthGuest() {
 // Poll for status changes every 3 seconds
 setInterval(async () => {
   if (document.visibilityState === 'visible') {
+    await forceRefreshFromAPI();
     await checkPlatformAccess();
   }
 }, 3000);
-
 // Run check on page load
 checkPlatformAccess();
 
