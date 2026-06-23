@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Night Play | Night Industries</title>
+    <title>Night Play | Night Cloud</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -23,10 +23,6 @@
             background: var(--primary);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             overflow-x: hidden;
         }
         .bg-grid {
@@ -40,7 +36,7 @@
         .navbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             padding: 20px 40px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: center; align-items: center;
             background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
             backdrop-filter: blur(10px);
         }
@@ -49,17 +45,10 @@
             color: var(--accent); text-shadow: 0 0 20px var(--accent-dim);
             letter-spacing: 2px; cursor: pointer; text-decoration: none;
         }
-        .back-link {
-            color: var(--text-dim); text-decoration: none; font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-        .back-link:hover { color: var(--accent); }
         .main-container {
             position: relative; z-index: 1;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
             min-height: 100vh; padding: 100px 20px 40px;
-            width: 100%; max-width: 500px;
+            width: 100%; max-width: 1200px; margin: 0 auto;
         }
         .platform-header {
             text-align: center; margin-bottom: 40px;
@@ -81,7 +70,8 @@
             border-radius: 15px;
             padding: 40px;
             text-align: center;
-            width: 100%;
+            width: 100%; max-width: 500px;
+            margin: 0 auto;
             animation: fadeIn 0.5s ease;
         }
         .maintenance-banner.active { display: block; }
@@ -96,7 +86,8 @@
             display: none;
             background: var(--secondary);
             border: 1px solid rgba(0, 240, 255, 0.1);
-            border-radius: 20px; padding: 40px; width: 100%;
+            border-radius: 20px; padding: 40px; width: 100%; max-width: 450px;
+            margin: 0 auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.5s ease;
         }
@@ -137,6 +128,10 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
         }
+        .btn-guest {
+            background: linear-gradient(135deg, #888, #555); margin-top: 15px;
+        }
+        .btn-guest:hover { box-shadow: 0 10px 30px rgba(136, 136, 136, 0.3); }
         .status-indicator {
             display: flex; align-items: center; gap: 8px;
             margin-bottom: 20px; justify-content: center;
@@ -155,26 +150,152 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .footer {
-            margin-top: 40px; text-align: center;
-            color: var(--text-dim); font-size: 0.8rem;
+        /* ===== GAMING DASHBOARD ===== */
+        .gaming-dashboard {
+            display: none;
+            animation: fadeIn 0.5s ease;
         }
-        .footer a { color: var(--accent); text-decoration: none; }
+        .gaming-dashboard.active { display: block; }
+        .dashboard-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        .dashboard-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
+            color: var(--accent); letter-spacing: 3px;
+        }
+        .user-info {
+            display: flex; align-items: center; gap: 15px;
+        }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #0088aa);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .logout-btn {
+            background: transparent; padding: 8px 20px; border-radius: 8px;
+            font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+            letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid var(--error); color: var(--error);
+        }
+        .logout-btn:hover { background: var(--error); color: white; }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .game-card {
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 15px; overflow: hidden;
+            transition: all 0.3s ease; cursor: pointer;
+            position: relative;
+        }
+        .game-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 240, 255, 0.1);
+        }
+        .game-thumbnail {
+            width: 100%; height: 160px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem;
+            position: relative; overflow: hidden;
+        }
+        .game-thumbnail::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), transparent);
+        }
+        .game-info { padding: 20px; }
+        .game-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1rem;
+            color: var(--text); margin-bottom: 8px; letter-spacing: 1px;
+        }
+        .game-desc {
+            font-size: 0.85rem; color: var(--text-dim);
+            margin-bottom: 15px; line-height: 1.4;
+        }
+        .game-meta {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .game-tag {
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .tag-action { background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.2); }
+        .tag-rpg { background: rgba(170, 0, 255, 0.1); color: #aa00ff; border: 1px solid rgba(170, 0, 255, 0.2); }
+        .tag-arcade { background: rgba(255, 170, 0, 0.1); color: var(--warning); border: 1px solid rgba(255, 170, 0, 0.2); }
+        .tag-sports { background: rgba(0, 100, 255, 0.1); color: #0064ff; border: 1px solid rgba(0, 100, 255, 0.2); }
+        .tag-strategy { background: rgba(255, 0, 100, 0.1); color: #ff0064; border: 1px solid rgba(255, 0, 100, 0.2); }
+        .play-btn {
+            padding: 8px 20px; background: var(--accent);
+            border: none; border-radius: 8px; color: var(--primary);
+            font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+            font-weight: 700; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .play-btn:hover {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: scale(1.05);
+        }
+        .section-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.2rem;
+            color: var(--text); margin: 40px 0 20px; letter-spacing: 2px;
+        }
+        .footer {
+            margin-top: 60px; padding: 30px; text-align: center;
+            color: var(--text-dim); font-size: 0.8rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.05);
+        }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .game-modal {
+            background: var(--secondary); border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px; padding: 40px; text-align: center;
+            max-width: 500px; width: 90%;
+            transform: scale(0.9); transition: transform 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .modal-overlay.active .game-modal { transform: scale(1); }
+        .game-modal .icon { font-size: 4rem; margin-bottom: 20px; }
+        .game-modal h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.3rem;
+            color: var(--accent); margin-bottom: 15px;
+        }
+        .game-modal p { color: var(--text-dim); margin-bottom: 25px; }
+        .modal-close {
+            padding: 12px 30px; background: transparent;
+            border: 1px solid var(--accent); border-radius: 8px;
+            color: var(--accent); font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem; letter-spacing: 2px; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-close:hover { background: var(--accent); color: var(--primary); }
+        @media (max-width: 768px) {
+            .games-grid { grid-template-columns: 1fr; }
+            .dashboard-header { flex-direction: column; gap: 15px; }
+            .navbar { padding: 15px 20px; }
+        }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="bg-grid"></div>
 
     <nav class="navbar">
-        <a href="index.html" class="logo">◀ NIGHT INDUSTRIES</a>
-        <a href="index.html" class="back-link">← Back to Master Control</a>
+        <a href="index.html" class="logo">NIGHT CLOUD</a>
     </nav>
 
     <div class="main-container">
-        <div class="platform-header">
-            <h1>🎮 NIGHT PLAY</h1>
-            <p>Gaming & Entertainment Platform</p>
-        </div>
 
         <!-- Maintenance Mode Banner -->
         <div class="maintenance-banner" id="maintenanceBanner">
@@ -184,81 +305,276 @@
             Please check back later or contact support for updates.</p>
         </div>
 
-        <!-- Normal Sign In -->
+        <!-- Sign In Screen -->
         <div class="auth-container" id="signInContainer">
             <div class="status-indicator">
                 <div class="status-dot online" id="statusDot"></div>
                 <span style="color: var(--success); font-size: 0.85rem; letter-spacing: 2px;">PLATFORM ONLINE</span>
             </div>
             <h2>SIGN IN TO NIGHT PLAY</h2>
-            <form onsubmit="handlePlatformSignIn(event)">
+            <form id="signinForm" onsubmit="handlePlatformSignIn(event)">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" placeholder="you@gmail.com" required>
+                    <label>Username or Email</label>
+                    <input type="text" id="playUsername" placeholder="Enter username or email" required>
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" placeholder="Enter password" required>
+                    <input type="password" id="playPassword" placeholder="Enter password" required>
                 </div>
                 <button type="submit" class="btn">Enter Night Play</button>
+                <button type="button" class="btn btn-guest" onclick="guestPlay()">Play as Guest</button>
             </form>
         </div>
 
-        <div class="footer">
-            <p> 2026 Night Industries. <a href="index.html">Master Control</a></p>
+        <!-- GAMING DASHBOARD -->
+        <div class="gaming-dashboard" id="gamingDashboard">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">🎮 NIGHT PLAY</h2>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <span id="displayUsername">Player</span>
+                    <button class="logout-btn" onclick="playLogout()">LOGOUT</button>
+                </div>
+            </div>
+
+            <h3 class="section-title">🔥 Featured Games</h3>
+            <div class="games-grid">
+                <div class="game-card" onclick="launchGame('Neon Racer', 'racing')">
+                    <div class="game-thumbnail">🏎️</div>
+                    <div class="game-info">
+                        <div class="game-title">Neon Racer</div>
+                        <div class="game-desc">High-speed cyberpunk racing through neon-lit city streets.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-action">Action</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="launchGame('Cyber Dungeon', 'rpg')">
+                    <div class="game-thumbnail">⚔️</div>
+                    <div class="game-info">
+                        <div class="game-title">Cyber Dungeon</div>
+                        <div class="game-desc">Explore procedurally generated dungeons in a dark cyber world.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-rpg">RPG</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="launchGame('Pixel Breaker', 'arcade')">
+                    <div class="game-thumbnail">🧱</div>
+                    <div class="game-info">
+                        <div class="game-title">Pixel Breaker</div>
+                        <div class="game-desc">Classic brick breaker with a futuristic neon twist.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-arcade">Arcade</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="launchGame('Void Striker', 'action')">
+                    <div class="game-thumbnail">🚀</div>
+                    <div class="game-info">
+                        <div class="game-title">Void Striker</div>
+                        <div class="game-desc">Space shooter defending the galaxy from alien invaders.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-action">Action</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="launchGame('Night Soccer', 'sports')">
+                    <div class="game-thumbnail">⚽</div>
+                    <div class="game-info">
+                        <div class="game-title">Night Soccer</div>
+                        <div class="game-desc">5v5 street soccer under the neon lights of Night City.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-sports">Sports</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="launchGame('Tactical Grid', 'strategy')">
+                    <div class="game-thumbnail">♟️</div>
+                    <div class="game-info">
+                        <div class="game-title">Tactical Grid</div>
+                        <div class="game-desc">Turn-based strategy on a holographic battlefield.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-strategy">Strategy</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">🆕 New Releases</h3>
+            <div class="games-grid">
+                <div class="game-card" onclick="launchGame('Shadow Runner', 'action')">
+                    <div class="game-thumbnail">🏃</div>
+                    <div class="game-info">
+                        <div class="game-title">Shadow Runner</div>
+                        <div class="game-desc">Parkour through a dystopian metropolis.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-action">Action</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="launchGame('Neon Puzzler', 'arcade')">
+                    <div class="game-thumbnail">🧩</div>
+                    <div class="game-info">
+                        <div class="game-title">Neon Puzzler</div>
+                        <div class="game-desc">Match glowing neon blocks in this addictive puzzle game.</div>
+                        <div class="game-meta">
+                            <span class="game-tag tag-arcade">Arcade</span>
+                            <button class="play-btn">PLAY</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p> 2026 Night Cloud. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Launch Modal -->
+    <div class="modal-overlay" id="gameModal">
+        <div class="game-modal">
+            <div class="icon" id="modalIcon">🎮</div>
+            <h2 id="modalTitle">Game Title</h2>
+            <p id="modalDesc">This game is loading...</p>
+            <button class="modal-close" onclick="closeGameModal()">Close</button>
         </div>
     </div>
 
     <script>
-        // ===================== PLATFORM CONNECTOR =====================
-        // This connects to the Night Industries Master Control Panel
-        // and checks if this platform is in maintenance mode.
-
-        // ⚠️ CHANGE THIS for each platform you create
         const PLATFORM_ID = 'night-play';
 
         function getServices() {
-            return JSON.parse(localStorage.getItem('night_services') || '[]');
+            // If night_services doesn't exist, initialize with defaults
+            if (!localStorage.getItem('night_services')) {
+                const defaultServices = [
+                    { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '☁️', status: 'online', url: 'index.html' },
+                    { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'online', url: 'night-play.html' },
+                    { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '✉️', status: 'online', url: 'night-mail.html' },
+                    { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '🤖', status: 'online', url: 'night-ai.html' },
+                    { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '🛒', status: 'online', url: 'night-store.html' },
+                    { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '🔒', status: 'online', url: 'night-secure.html' }
+                ];
+                localStorage.setItem('night_services', JSON.stringify(defaultServices));
+            }
+            return JSON.parse(localStorage.getItem('night_services'));
         }
 
         function checkPlatformStatus() {
             const services = getServices();
             const platform = services.find(s => s.id === PLATFORM_ID);
-
             const maintenanceBanner = document.getElementById('maintenanceBanner');
             const signInContainer = document.getElementById('signInContainer');
-            const statusDot = document.getElementById('statusDot');
+            const gamingDashboard = document.getElementById('gamingDashboard');
 
             if (!platform) {
-                // Platform not found in master list - default to maintenance
+                console.error('Platform not found in services');
                 maintenanceBanner.classList.add('active');
                 signInContainer.classList.remove('active');
+                gamingDashboard.classList.remove('active');
                 return;
             }
 
             if (platform.status === 'maintenance') {
                 maintenanceBanner.classList.add('active');
                 signInContainer.classList.remove('active');
+                gamingDashboard.classList.remove('active');
+                return;
+            }
+
+            maintenanceBanner.classList.remove('active');
+
+            // Check if user is already logged in to Night Play
+            const playAuth = JSON.parse(localStorage.getItem('night_play_auth') || '{"isLoggedIn":false}');
+            if (playAuth.isLoggedIn) {
+                signInContainer.classList.remove('active');
+                gamingDashboard.classList.add('active');
+                document.getElementById('displayUsername').textContent = playAuth.username || 'Player';
             } else {
-                maintenanceBanner.classList.remove('active');
                 signInContainer.classList.add('active');
+                gamingDashboard.classList.remove('active');
             }
         }
 
         function handlePlatformSignIn(e) {
             e.preventDefault();
-            // Add your actual Night Play sign-in logic here
-            alert('Welcome to Night Play! (Add your real auth logic here)');
+            const input = document.getElementById('playUsername').value.trim();
+            const password = document.getElementById('playPassword').value;
+
+            // Check against Night Cloud master user database
+            const users = JSON.parse(localStorage.getItem('night_users') || '[]');
+            const user = users.find(u => 
+                (u.username.toLowerCase() === input.toLowerCase() || u.email.toLowerCase() === input.toLowerCase()) 
+                && u.password === password
+            );
+
+            if (user) {
+                localStorage.setItem('night_play_auth', JSON.stringify({
+                    isLoggedIn: true,
+                    username: user.username,
+                    name: user.name
+                }));
+                document.getElementById('signInContainer').classList.remove('active');
+                document.getElementById('gamingDashboard').classList.add('active');
+                document.getElementById('displayUsername').textContent = user.name || user.username;
+                document.getElementById('playUsername').value = '';
+                document.getElementById('playPassword').value = '';
+            } else {
+                alert('Invalid username/email or password!');
+            }
         }
 
-        // Listen for real-time updates from admin panel
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'night_services') {
-                checkPlatformStatus();
-            }
+        function guestPlay() {
+            localStorage.setItem('night_play_auth', JSON.stringify({
+                isLoggedIn: true,
+                username: 'Guest',
+                name: 'Guest Player'
+            }));
+            document.getElementById('signInContainer').classList.remove('active');
+            document.getElementById('gamingDashboard').classList.add('active');
+            document.getElementById('displayUsername').textContent = 'Guest Player';
+        }
+
+        function playLogout() {
+            localStorage.removeItem('night_play_auth');
+            document.getElementById('gamingDashboard').classList.remove('active');
+            document.getElementById('signInContainer').classList.add('active');
+            document.getElementById('playUsername').value = '';
+            document.getElementById('playPassword').value = '';
+        }
+
+        function launchGame(gameName, type) {
+            const modal = document.getElementById('gameModal');
+            document.getElementById('modalTitle').textContent = gameName;
+            document.getElementById('modalDesc').textContent = 
+                gameName + ' is launching... (Game integration coming soon!)';
+
+            const icons = { racing: '🏎️', rpg: '⚔️', arcade: '🧱', action: '🚀', sports: '⚽', strategy: '♟️' };
+            document.getElementById('modalIcon').textContent = icons[type] || '🎮';
+
+            modal.classList.add('active');
+        }
+
+        function closeGameModal() {
+            document.getElementById('gameModal').classList.remove('active');
+        }
+
+        document.getElementById('gameModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGameModal();
         });
 
-        // Check on page load
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'night_services') checkPlatformStatus();
+        });
+
         checkPlatformStatus();
     </script>
 </body>
