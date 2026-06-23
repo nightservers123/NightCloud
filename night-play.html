@@ -148,7 +148,6 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* ===== GAMING DASHBOARD ===== */
         .gaming-dashboard {
             display: none !important;
             animation: fadeIn 0.5s ease;
@@ -247,7 +246,6 @@
             color: var(--text-dim); font-size: 0.8rem;
             border-top: 1px solid rgba(0, 240, 255, 0.05);
         }
-        /* ===== GAME OVERLAY ===== */
         .game-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(10, 10, 15, 0.98);
@@ -302,6 +300,7 @@
             .game-canvas { width: 100%; height: auto; }
         }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -430,11 +429,17 @@
 
         async function getServices() {
             try {
-                const res = await fetch(API_URL + '/services');
-                return await res.json();
+                const res = await fetch(API_URL + '/services', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                localStorage.setItem('night_services', JSON.stringify(data));
+                return data;
             } catch (err) {
-                console.error('API error:', err);
-                return [];
+                console.warn('API unreachable, using localStorage fallback:', err.message);
+                return JSON.parse(localStorage.getItem('night_services') || '[]');
             }
         }
 
@@ -454,26 +459,53 @@
                 return;
             }
 
+            // Check if user is already logged in via Night Cloud master auth
+            const masterAuth = JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false}');
             const playAuth = JSON.parse(localStorage.getItem('night_play_auth') || '{"isLoggedIn":false}');
-            if (playAuth.isLoggedIn) {
+
+            if (masterAuth.isLoggedIn || playAuth.isLoggedIn) {
                 gamingDashboard.classList.add('show');
-                document.getElementById('displayUsername').textContent = playAuth.username || 'Player';
+                const username = masterAuth.name || masterAuth.username || playAuth.name || playAuth.username || 'Player';
+                document.getElementById('displayUsername').textContent = username;
             } else {
                 signInContainer.classList.add('show');
             }
         }
 
-        function handlePlatformSignIn(e) {
+        async function handlePlatformSignIn(e) {
             e.preventDefault();
             const input = document.getElementById('playUsername').value.trim();
             const password = document.getElementById('playPassword').value;
-            const users = JSON.parse(localStorage.getItem('night_users') || '[]');
-            const user = users.find(u => 
-                (u.username.toLowerCase() === input.toLowerCase() || u.email.toLowerCase() === input.toLowerCase()) 
-                && u.password === password
-            );
+
+            // Try API login first, fallback to localStorage
+            let user = null;
+            try {
+                const res = await fetch(API_URL + '/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usernameOrEmail: input, password: password })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    user = data.user;
+                }
+            } catch (err) {
+                console.warn('API login failed, trying localStorage:', err.message);
+            }
+
+            // Fallback to localStorage
+            if (!user) {
+                const users = JSON.parse(localStorage.getItem('night_users') || '[]');
+                user = users.find(u => 
+                    (u.username.toLowerCase() === input.toLowerCase() || u.email.toLowerCase() === input.toLowerCase()) 
+                    && u.password === password
+                );
+            }
+
             if (user) {
                 localStorage.setItem('night_play_auth', JSON.stringify({ isLoggedIn: true, username: user.username, name: user.name }));
+                // Also sync to master auth
+                localStorage.setItem('night_auth', JSON.stringify({ isLoggedIn: true, role: 'user', username: user.username, name: user.name }));
                 document.getElementById('signInContainer').classList.remove('show');
                 document.getElementById('gamingDashboard').classList.add('show');
                 document.getElementById('displayUsername').textContent = user.name || user.username;
@@ -486,6 +518,7 @@
 
         function guestPlay() {
             localStorage.setItem('night_play_auth', JSON.stringify({ isLoggedIn: true, username: 'Guest', name: 'Guest Player' }));
+            localStorage.setItem('night_auth', JSON.stringify({ isLoggedIn: true, role: 'guest' }));
             document.getElementById('signInContainer').classList.remove('show');
             document.getElementById('gamingDashboard').classList.add('show');
             document.getElementById('displayUsername').textContent = 'Guest Player';
@@ -493,6 +526,7 @@
 
         function playLogout() {
             localStorage.removeItem('night_play_auth');
+            localStorage.setItem('night_auth', JSON.stringify({ isLoggedIn: false, role: null }));
             document.getElementById('gamingDashboard').classList.remove('show');
             document.getElementById('signInContainer').classList.add('show');
             document.getElementById('playUsername').value = '';
@@ -565,7 +599,7 @@
                 if (ball.x < 0) { p2.score++; resetBall(); }
                 if (ball.x > 800) { p1.score++; resetBall(); }
 
-                document.getElementById('gameScore').textContent = `Player 1: ${p1.score}  |  Player 2: ${p2.score}`;
+                document.getElementById('gameScore').textContent = 'Player 1: ' + p1.score + '  |  Player 2: ' + p2.score;
             }
 
             function resetBall() {
@@ -793,7 +827,7 @@
                 ctx.fillRect(0, 0, 800, 500);
 
                 for (let i = 0; i < 50; i++) {
-                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5})`;
+                    ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.random() * 0.5 + ')';
                     ctx.fillRect(Math.random() * 800, Math.random() * 500, 1, 1);
                 }
 
