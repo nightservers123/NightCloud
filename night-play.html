@@ -426,23 +426,20 @@
         let gameLoop = null;
         let canvas, ctx;
 
-        function getServices() {
-            if (!localStorage.getItem('night_services')) {
-                const defaultServices = [
-                    { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '☁️', status: 'online', url: 'index.html' },
-                    { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'online', url: 'night-play.html' },
-                    { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '✉️', status: 'online', url: 'night-mail.html' },
-                    { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '🤖', status: 'online', url: 'night-ai.html' },
-                    { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '🛒', status: 'online', url: 'night-store.html' },
-                    { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '🔒', status: 'online', url: 'night-secure.html' }
-                ];
-                localStorage.setItem('night_services', JSON.stringify(defaultServices));
+        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
+
+        async function getServices() {
+            try {
+                const res = await fetch(API_URL + '/services');
+                return await res.json();
+            } catch (err) {
+                console.error('API error:', err);
+                return [];
             }
-            return JSON.parse(localStorage.getItem('night_services'));
         }
 
-        function checkPlatformStatus() {
-            const services = getServices();
+        async function checkPlatformStatus() {
+            const services = await getServices();
             const platform = services.find(s => s.id === PLATFORM_ID);
             const maintenanceBanner = document.getElementById('maintenanceBanner');
             const signInContainer = document.getElementById('signInContainer');
@@ -971,9 +968,12 @@
             loop();
         }
 
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'night_services') checkPlatformStatus();
-        });
+        // Poll for updates every 3 seconds for real-time sync
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                await checkPlatformStatus();
+            }
+        }, 3000);
 
         checkPlatformStatus();
     </script>
