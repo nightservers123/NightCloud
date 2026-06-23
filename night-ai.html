@@ -132,18 +132,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 
 /* ===== MAINTENANCE BANNER (Night Play style) ===== */
 .maintenance-banner {
-  display: none !important;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
-  border: 1px solid var(--warning);
-  border-radius: 15px;
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg);
+  z-index: 99999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 40px;
   text-align: center;
-  width: 100%; max-width: 500px;
-  margin: 0 auto;
-  animation: fadeIn 0.5s ease;
 }
-.maintenance-banner.show { display: block !important; }
-.maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; }
+.maintenance-banner.show {
+  display: flex !important;
+}
+.maintenance-banner .maintenance-content {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+  border: 1px solid var(--warning);
+  border-radius: 20px;
+  padding: 50px 60px;
+  max-width: 500px;
+  width: 100%;
+  animation: fadeIn 0.5s ease;
+  box-shadow: 0 0 60px rgba(245, 158, 11, 0.15);
+}
+.maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; display: block; }
 .maintenance-banner h2 {
   font-size: 1.5rem; font-weight: 700;
   color: var(--warning); margin-bottom: 15px;
@@ -156,10 +169,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 <body>
 <!-- Maintenance Mode Banner -->
 <div class="maintenance-banner" id="maintenanceBanner">
-  <div class="icon">&#128295;</div>
-  <h2>Platform Under Maintenance</h2>
-  <p>Night AI is currently undergoing scheduled maintenance.<br>
-  Please check back later or contact support for updates.</p>
+  <div class="maintenance-content">
+    <span class="icon">&#128295;</span>
+    <h2>Platform Under Maintenance</h2>
+    <p>Night AI is currently undergoing scheduled maintenance.<br>
+    Please check back later or contact support for updates.</p>
+  </div>
 </div>
 
 
@@ -495,17 +510,15 @@ function exportChat() {
 
 createParticles();
 
-// Auto-hide welcome after 1 second (but check maintenance first)
+// Auto-hide welcome after 1 second
 setTimeout(async function() {
   const services = await getServices();
   const platform = services.find(s => s.id === PLATFORM_ID);
   const auth = getAuth();
 
-  // Don't auto-show if maintenance mode is on (unless admin)
+  // If maintenance mode is active and user is not admin, stay on maintenance screen
   if (platform && platform.status === 'maintenance' && !(auth.isLoggedIn && auth.role === 'admin')) {
     document.getElementById('welcomeScreen').classList.add('hidden');
-    document.querySelector('.header').style.display = 'none';
-    document.querySelector('.main-container').style.display = 'none';
     document.getElementById('maintenanceBanner').classList.add('show');
     return;
   }
@@ -548,28 +561,17 @@ async function checkPlatformAccess() {
   const auth = getAuth();
   const maintenanceBanner = document.getElementById('maintenanceBanner');
   const authOverlay = document.getElementById('authOverlay');
-  const welcomeScreen = document.getElementById('welcomeScreen');
-  const header = document.querySelector('.header');
-  const mainContainer = document.querySelector('.main-container');
 
   // Admin ALWAYS bypasses everything
   if (auth.isLoggedIn && auth.role === 'admin') {
     maintenanceBanner.classList.remove('show');
     authOverlay.classList.add('hidden');
-    if (welcomeScreen) welcomeScreen.classList.add('hidden');
-    if (header) header.style.display = '';
-    if (mainContainer) mainContainer.style.display = '';
     return;
   }
 
-  // Check maintenance mode FIRST - blocks everyone except admin
+  // Check maintenance mode - BLOCKS everyone except admin
   if (platform && platform.status === 'maintenance') {
-    // Hide everything else
     authOverlay.classList.add('hidden');
-    if (welcomeScreen) welcomeScreen.classList.add('hidden');
-    if (header) header.style.display = 'none';
-    if (mainContainer) mainContainer.style.display = 'none';
-    // Show maintenance banner
     maintenanceBanner.classList.add('show');
     return;
   }
@@ -579,17 +581,11 @@ async function checkPlatformAccess() {
   // Check if user is authenticated (user or guest)
   if (auth.isLoggedIn && (auth.role === 'user' || auth.role === 'guest')) {
     authOverlay.classList.add('hidden');
-    if (welcomeScreen) welcomeScreen.classList.add('hidden');
-    if (header) header.style.display = '';
-    if (mainContainer) mainContainer.style.display = '';
     return;
   }
 
   // Not authenticated - show auth gate
   authOverlay.classList.remove('hidden');
-  if (welcomeScreen) welcomeScreen.classList.add('hidden');
-  if (header) header.style.display = 'none';
-  if (mainContainer) mainContainer.style.display = 'none';
 }
 
 async function handleAuthSignIn() {
