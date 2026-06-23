@@ -62,9 +62,8 @@
             color: var(--text-dim); font-size: 1rem; letter-spacing: 3px;
             text-transform: uppercase;
         }
-        /* Maintenance Banner */
         .maintenance-banner {
-            display: none;
+            display: none !important;
             background: linear-gradient(135deg, rgba(255, 170, 0, 0.1), rgba(255, 51, 102, 0.1));
             border: 1px solid var(--warning);
             border-radius: 15px;
@@ -74,16 +73,15 @@
             margin: 0 auto;
             animation: fadeIn 0.5s ease;
         }
-        .maintenance-banner.active { display: block; }
+        .maintenance-banner.show { display: block !important; }
         .maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; }
         .maintenance-banner h2 {
             font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
             color: var(--warning); margin-bottom: 15px;
         }
         .maintenance-banner p { color: var(--text-dim); line-height: 1.6; }
-        /* Sign In Form */
         .auth-container {
-            display: none;
+            display: none !important;
             background: var(--secondary);
             border: 1px solid rgba(0, 240, 255, 0.1);
             border-radius: 20px; padding: 40px; width: 100%; max-width: 450px;
@@ -91,7 +89,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.5s ease;
         }
-        .auth-container.active { display: block; }
+        .auth-container.show { display: block !important; }
         .auth-container h2 {
             font-family: 'Orbitron', sans-serif; font-size: 1.2rem;
             color: var(--accent); margin-bottom: 25px; text-align: center;
@@ -152,10 +150,10 @@
         }
         /* ===== GAMING DASHBOARD ===== */
         .gaming-dashboard {
-            display: none;
+            display: none !important;
             animation: fadeIn 0.5s ease;
         }
-        .gaming-dashboard.active { display: block; }
+        .gaming-dashboard.show { display: block !important; }
         .dashboard-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; padding-bottom: 20px;
@@ -227,10 +225,8 @@
             text-transform: uppercase;
         }
         .tag-action { background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.2); }
-        .tag-rpg { background: rgba(170, 0, 255, 0.1); color: #aa00ff; border: 1px solid rgba(170, 0, 255, 0.2); }
         .tag-arcade { background: rgba(255, 170, 0, 0.1); color: var(--warning); border: 1px solid rgba(255, 170, 0, 0.2); }
         .tag-sports { background: rgba(0, 100, 255, 0.1); color: #0064ff; border: 1px solid rgba(0, 100, 255, 0.2); }
-        .tag-strategy { background: rgba(255, 0, 100, 0.1); color: #ff0064; border: 1px solid rgba(255, 0, 100, 0.2); }
         .play-btn {
             padding: 8px 20px; background: var(--accent);
             border: none; border-radius: 8px; color: var(--primary);
@@ -251,39 +247,59 @@
             color: var(--text-dim); font-size: 0.8rem;
             border-top: 1px solid rgba(0, 240, 255, 0.05);
         }
-        .modal-overlay {
+        /* ===== GAME OVERLAY ===== */
+        .game-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
-            z-index: 1000; display: flex; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            background: rgba(10, 10, 15, 0.98);
+            z-index: 2000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px;
         }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .game-modal {
-            background: var(--secondary); border: 1px solid rgba(0, 240, 255, 0.2);
-            border-radius: 20px; padding: 40px; text-align: center;
-            max-width: 500px; width: 90%;
-            transform: scale(0.9); transition: transform 0.3s ease;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        .game-overlay.show { display: flex; }
+        .game-overlay-header {
+            width: 100%; max-width: 800px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding: 0 10px;
         }
-        .modal-overlay.active .game-modal { transform: scale(1); }
-        .game-modal .icon { font-size: 4rem; margin-bottom: 20px; }
-        .game-modal h2 {
+        .game-overlay-title {
             font-family: 'Orbitron', sans-serif; font-size: 1.3rem;
-            color: var(--accent); margin-bottom: 15px;
+            color: var(--accent); letter-spacing: 2px;
         }
-        .game-modal p { color: var(--text-dim); margin-bottom: 25px; }
-        .modal-close {
-            padding: 12px 30px; background: transparent;
-            border: 1px solid var(--accent); border-radius: 8px;
-            color: var(--accent); font-family: 'Orbitron', sans-serif;
-            font-size: 0.85rem; letter-spacing: 2px; cursor: pointer;
-            transition: all 0.3s ease;
+        .game-overlay-close {
+            background: transparent; padding: 8px 20px; border-radius: 8px;
+            font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+            letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid var(--error); color: var(--error);
         }
-        .modal-close:hover { background: var(--accent); color: var(--primary); }
+        .game-overlay-close:hover { background: var(--error); color: white; }
+        .game-canvas-container {
+            position: relative;
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+        }
+        .game-canvas {
+            display: block;
+            background: #0a0a1a;
+        }
+        .game-controls {
+            margin-top: 15px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .game-score {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
         @media (max-width: 768px) {
             .games-grid { grid-template-columns: 1fr; }
             .dashboard-header { flex-direction: column; gap: 15px; }
             .navbar { padding: 15px 20px; }
+            .game-canvas { width: 100%; height: auto; }
         }
     </style>
 <base target="_blank">
@@ -337,94 +353,46 @@
                 </div>
             </div>
 
-            <h3 class="section-title">🔥 Featured Games</h3>
+            <h3 class="section-title">🔥 Play Now</h3>
             <div class="games-grid">
-                <div class="game-card" onclick="launchGame('Neon Racer', 'racing')">
-                    <div class="game-thumbnail">🏎️</div>
+                <div class="game-card" onclick="startGame('neonPong')">
+                    <div class="game-thumbnail">🏓</div>
                     <div class="game-info">
-                        <div class="game-title">Neon Racer</div>
-                        <div class="game-desc">High-speed cyberpunk racing through neon-lit city streets.</div>
+                        <div class="game-title">Neon Pong</div>
+                        <div class="game-desc">Classic Pong with a neon cyberpunk twist. Use W/S or Arrow keys.</div>
                         <div class="game-meta">
-                            <span class="game-tag tag-action">Action</span>
+                            <span class="game-tag tag-action">Arcade</span>
                             <button class="play-btn">PLAY</button>
                         </div>
                     </div>
                 </div>
-                <div class="game-card" onclick="launchGame('Cyber Dungeon', 'rpg')">
-                    <div class="game-thumbnail">⚔️</div>
+                <div class="game-card" onclick="startGame('neonSnake')">
+                    <div class="game-thumbnail">🐍</div>
                     <div class="game-info">
-                        <div class="game-title">Cyber Dungeon</div>
-                        <div class="game-desc">Explore procedurally generated dungeons in a dark cyber world.</div>
-                        <div class="game-meta">
-                            <span class="game-tag tag-rpg">RPG</span>
-                            <button class="play-btn">PLAY</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="game-card" onclick="launchGame('Pixel Breaker', 'arcade')">
-                    <div class="game-thumbnail">🧱</div>
-                    <div class="game-info">
-                        <div class="game-title">Pixel Breaker</div>
-                        <div class="game-desc">Classic brick breaker with a futuristic neon twist.</div>
+                        <div class="game-title">Neon Snake</div>
+                        <div class="game-desc">Eat glowing orbs and grow your snake. Don't hit the walls!</div>
                         <div class="game-meta">
                             <span class="game-tag tag-arcade">Arcade</span>
                             <button class="play-btn">PLAY</button>
                         </div>
                     </div>
                 </div>
-                <div class="game-card" onclick="launchGame('Void Striker', 'action')">
+                <div class="game-card" onclick="startGame('spaceShooter')">
                     <div class="game-thumbnail">🚀</div>
                     <div class="game-info">
-                        <div class="game-title">Void Striker</div>
-                        <div class="game-desc">Space shooter defending the galaxy from alien invaders.</div>
+                        <div class="game-title">Void Defender</div>
+                        <div class="game-desc">Defend the galaxy from alien invaders. Arrow keys + Space to shoot.</div>
                         <div class="game-meta">
-                            <span class="game-tag tag-action">Action</span>
+                            <span class="game-tag tag-action">Shooter</span>
                             <button class="play-btn">PLAY</button>
                         </div>
                     </div>
                 </div>
-                <div class="game-card" onclick="launchGame('Night Soccer', 'sports')">
-                    <div class="game-thumbnail">⚽</div>
+                <div class="game-card" onclick="startGame('neonBreaker')">
+                    <div class="game-thumbnail">🧱</div>
                     <div class="game-info">
-                        <div class="game-title">Night Soccer</div>
-                        <div class="game-desc">5v5 street soccer under the neon lights of Night City.</div>
-                        <div class="game-meta">
-                            <span class="game-tag tag-sports">Sports</span>
-                            <button class="play-btn">PLAY</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="game-card" onclick="launchGame('Tactical Grid', 'strategy')">
-                    <div class="game-thumbnail">♟️</div>
-                    <div class="game-info">
-                        <div class="game-title">Tactical Grid</div>
-                        <div class="game-desc">Turn-based strategy on a holographic battlefield.</div>
-                        <div class="game-meta">
-                            <span class="game-tag tag-strategy">Strategy</span>
-                            <button class="play-btn">PLAY</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <h3 class="section-title">🆕 New Releases</h3>
-            <div class="games-grid">
-                <div class="game-card" onclick="launchGame('Shadow Runner', 'action')">
-                    <div class="game-thumbnail">🏃</div>
-                    <div class="game-info">
-                        <div class="game-title">Shadow Runner</div>
-                        <div class="game-desc">Parkour through a dystopian metropolis.</div>
-                        <div class="game-meta">
-                            <span class="game-tag tag-action">Action</span>
-                            <button class="play-btn">PLAY</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="game-card" onclick="launchGame('Neon Puzzler', 'arcade')">
-                    <div class="game-thumbnail">🧩</div>
-                    <div class="game-info">
-                        <div class="game-title">Neon Puzzler</div>
-                        <div class="game-desc">Match glowing neon blocks in this addictive puzzle game.</div>
+                        <div class="game-title">Neon Breaker</div>
+                        <div class="game-desc">Break all the bricks with your neon paddle. Mouse or arrow keys.</div>
                         <div class="game-meta">
                             <span class="game-tag tag-arcade">Arcade</span>
                             <button class="play-btn">PLAY</button>
@@ -439,21 +407,26 @@
         </div>
     </div>
 
-    <!-- Game Launch Modal -->
-    <div class="modal-overlay" id="gameModal">
-        <div class="game-modal">
-            <div class="icon" id="modalIcon">🎮</div>
-            <h2 id="modalTitle">Game Title</h2>
-            <p id="modalDesc">This game is loading...</p>
-            <button class="modal-close" onclick="closeGameModal()">Close</button>
+    <!-- GAME OVERLAY -->
+    <div class="game-overlay" id="gameOverlay">
+        <div class="game-overlay-header">
+            <h2 class="game-overlay-title" id="gameOverlayTitle">Game</h2>
+            <button class="game-overlay-close" onclick="closeGame()">✕ CLOSE</button>
         </div>
+        <div class="game-canvas-container">
+            <canvas id="gameCanvas" class="game-canvas" width="800" height="500"></canvas>
+        </div>
+        <div class="game-score" id="gameScore">Score: 0</div>
+        <div class="game-controls" id="gameControls">Use Arrow Keys or Mouse to play</div>
     </div>
 
     <script>
         const PLATFORM_ID = 'night-play';
+        let currentGame = null;
+        let gameLoop = null;
+        let canvas, ctx;
 
         function getServices() {
-            // If night_services doesn't exist, initialize with defaults
             if (!localStorage.getItem('night_services')) {
                 const defaultServices = [
                     { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '☁️', status: 'online', url: 'index.html' },
@@ -475,32 +448,21 @@
             const signInContainer = document.getElementById('signInContainer');
             const gamingDashboard = document.getElementById('gamingDashboard');
 
-            if (!platform) {
-                console.error('Platform not found in services');
-                maintenanceBanner.classList.add('active');
-                signInContainer.classList.remove('active');
-                gamingDashboard.classList.remove('active');
+            maintenanceBanner.classList.remove('show');
+            signInContainer.classList.remove('show');
+            gamingDashboard.classList.remove('show');
+
+            if (platform && platform.status === 'maintenance') {
+                maintenanceBanner.classList.add('show');
                 return;
             }
 
-            if (platform.status === 'maintenance') {
-                maintenanceBanner.classList.add('active');
-                signInContainer.classList.remove('active');
-                gamingDashboard.classList.remove('active');
-                return;
-            }
-
-            maintenanceBanner.classList.remove('active');
-
-            // Check if user is already logged in to Night Play
             const playAuth = JSON.parse(localStorage.getItem('night_play_auth') || '{"isLoggedIn":false}');
             if (playAuth.isLoggedIn) {
-                signInContainer.classList.remove('active');
-                gamingDashboard.classList.add('active');
+                gamingDashboard.classList.add('show');
                 document.getElementById('displayUsername').textContent = playAuth.username || 'Player';
             } else {
-                signInContainer.classList.add('active');
-                gamingDashboard.classList.remove('active');
+                signInContainer.classList.add('show');
             }
         }
 
@@ -508,22 +470,15 @@
             e.preventDefault();
             const input = document.getElementById('playUsername').value.trim();
             const password = document.getElementById('playPassword').value;
-
-            // Check against Night Cloud master user database
             const users = JSON.parse(localStorage.getItem('night_users') || '[]');
             const user = users.find(u => 
                 (u.username.toLowerCase() === input.toLowerCase() || u.email.toLowerCase() === input.toLowerCase()) 
                 && u.password === password
             );
-
             if (user) {
-                localStorage.setItem('night_play_auth', JSON.stringify({
-                    isLoggedIn: true,
-                    username: user.username,
-                    name: user.name
-                }));
-                document.getElementById('signInContainer').classList.remove('active');
-                document.getElementById('gamingDashboard').classList.add('active');
+                localStorage.setItem('night_play_auth', JSON.stringify({ isLoggedIn: true, username: user.username, name: user.name }));
+                document.getElementById('signInContainer').classList.remove('show');
+                document.getElementById('gamingDashboard').classList.add('show');
                 document.getElementById('displayUsername').textContent = user.name || user.username;
                 document.getElementById('playUsername').value = '';
                 document.getElementById('playPassword').value = '';
@@ -533,43 +488,488 @@
         }
 
         function guestPlay() {
-            localStorage.setItem('night_play_auth', JSON.stringify({
-                isLoggedIn: true,
-                username: 'Guest',
-                name: 'Guest Player'
-            }));
-            document.getElementById('signInContainer').classList.remove('active');
-            document.getElementById('gamingDashboard').classList.add('active');
+            localStorage.setItem('night_play_auth', JSON.stringify({ isLoggedIn: true, username: 'Guest', name: 'Guest Player' }));
+            document.getElementById('signInContainer').classList.remove('show');
+            document.getElementById('gamingDashboard').classList.add('show');
             document.getElementById('displayUsername').textContent = 'Guest Player';
         }
 
         function playLogout() {
             localStorage.removeItem('night_play_auth');
-            document.getElementById('gamingDashboard').classList.remove('active');
-            document.getElementById('signInContainer').classList.add('active');
+            document.getElementById('gamingDashboard').classList.remove('show');
+            document.getElementById('signInContainer').classList.add('show');
             document.getElementById('playUsername').value = '';
             document.getElementById('playPassword').value = '';
         }
 
-        function launchGame(gameName, type) {
-            const modal = document.getElementById('gameModal');
-            document.getElementById('modalTitle').textContent = gameName;
-            document.getElementById('modalDesc').textContent = 
-                gameName + ' is launching... (Game integration coming soon!)';
+        // ===================== GAME ENGINE =====================
+        function startGame(gameName) {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            document.getElementById('gameOverlay').classList.add('show');
+            document.getElementById('gameScore').textContent = 'Score: 0';
 
-            const icons = { racing: '🏎️', rpg: '⚔️', arcade: '🧱', action: '🚀', sports: '⚽', strategy: '♟️' };
-            document.getElementById('modalIcon').textContent = icons[type] || '🎮';
-
-            modal.classList.add('active');
+            if (gameName === 'neonPong') {
+                document.getElementById('gameOverlayTitle').textContent = '🏓 Neon Pong';
+                document.getElementById('gameControls').textContent = 'Player 1: W/S | Player 2: ↑/↓ | Press SPACE to start';
+                startNeonPong();
+            } else if (gameName === 'neonSnake') {
+                document.getElementById('gameOverlayTitle').textContent = '🐍 Neon Snake';
+                document.getElementById('gameControls').textContent = 'Arrow Keys to move | Eat orbs to grow';
+                startNeonSnake();
+            } else if (gameName === 'spaceShooter') {
+                document.getElementById('gameOverlayTitle').textContent = '🚀 Void Defender';
+                document.getElementById('gameControls').textContent = 'Arrow Keys to move | Space to shoot';
+                startSpaceShooter();
+            } else if (gameName === 'neonBreaker') {
+                document.getElementById('gameOverlayTitle').textContent = '🧱 Neon Breaker';
+                document.getElementById('gameControls').textContent = 'Mouse or Arrow Keys to move paddle';
+                startNeonBreaker();
+            }
         }
 
-        function closeGameModal() {
-            document.getElementById('gameModal').classList.remove('active');
+        function closeGame() {
+            if (gameLoop) cancelAnimationFrame(gameLoop);
+            currentGame = null;
+            document.getElementById('gameOverlay').classList.remove('show');
         }
 
-        document.getElementById('gameModal').addEventListener('click', function(e) {
-            if (e.target === this) closeGameModal();
-        });
+        // ===================== NEON PONG =====================
+        function startNeonPong() {
+            const paddleH = 80, paddleW = 15;
+            let ball = { x: 400, y: 250, dx: 5, dy: 5, size: 10 };
+            let p1 = { y: 200, score: 0 };
+            let p2 = { y: 200, score: 0 };
+            let keys = {};
+            let gameStarted = false;
+
+            document.onkeydown = e => { keys[e.key] = true; if (e.key === ' ' && !gameStarted) { gameStarted = true; } };
+            document.onkeyup = e => keys[e.key] = false;
+
+            function update() {
+                if (!gameStarted) return;
+
+                if (keys['w'] || keys['W']) p1.y -= 6;
+                if (keys['s'] || keys['S']) p1.y += 6;
+                if (keys['ArrowUp']) p2.y -= 6;
+                if (keys['ArrowDown']) p2.y += 6;
+
+                p1.y = Math.max(0, Math.min(500 - paddleH, p1.y));
+                p2.y = Math.max(0, Math.min(500 - paddleH, p2.y));
+
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+                if (ball.y <= 0 || ball.y >= 500) ball.dy *= -1;
+
+                if (ball.x <= 30 && ball.y >= p1.y && ball.y <= p1.y + paddleH) ball.dx = Math.abs(ball.dx) * 1.05;
+                if (ball.x >= 755 && ball.y >= p2.y && ball.y <= p2.y + paddleH) ball.dx = -Math.abs(ball.dx) * 1.05;
+
+                if (ball.x < 0) { p2.score++; resetBall(); }
+                if (ball.x > 800) { p1.score++; resetBall(); }
+
+                document.getElementById('gameScore').textContent = `Player 1: ${p1.score}  |  Player 2: ${p2.score}`;
+            }
+
+            function resetBall() {
+                ball.x = 400; ball.y = 250;
+                ball.dx = (Math.random() > 0.5 ? 5 : -5);
+                ball.dy = (Math.random() > 0.5 ? 5 : -5);
+                gameStarted = false;
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a1a';
+                ctx.fillRect(0, 0, 800, 500);
+
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath(); ctx.moveTo(400, 0); ctx.lineTo(400, 500); ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00f0ff';
+                ctx.fillStyle = '#00f0ff';
+                ctx.fillRect(15, p1.y, paddleW, paddleH);
+                ctx.fillRect(770, p2.y, paddleW, paddleH);
+
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                if (!gameStarted) {
+                    ctx.fillStyle = 'rgba(0, 240, 255, 0.5)';
+                    ctx.font = '20px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Press SPACE to start', 400, 250);
+                }
+            }
+
+            function loop() {
+                if (currentGame !== 'neonPong') return;
+                update(); draw();
+                gameLoop = requestAnimationFrame(loop);
+            }
+            currentGame = 'neonPong';
+            loop();
+        }
+
+        // ===================== NEON SNAKE =====================
+        function startNeonSnake() {
+            const gridSize = 20;
+            let snake = [{ x: 20, y: 15 }];
+            let food = { x: 30, y: 15 };
+            let dir = { x: 1, y: 0 };
+            let nextDir = { x: 1, y: 0 };
+            let score = 0;
+            let gameOver = false;
+            let speed = 100;
+            let lastTime = 0;
+
+            document.onkeydown = e => {
+                if (gameOver && e.key === ' ') { resetSnake(); return; }
+                if (e.key === 'ArrowUp' && dir.y === 0) nextDir = { x: 0, y: -1 };
+                if (e.key === 'ArrowDown' && dir.y === 0) nextDir = { x: 0, y: 1 };
+                if (e.key === 'ArrowLeft' && dir.x === 0) nextDir = { x: -1, y: 0 };
+                if (e.key === 'ArrowRight' && dir.x === 0) nextDir = { x: 1, y: 0 };
+            };
+
+            function resetSnake() {
+                snake = [{ x: 20, y: 15 }];
+                food = { x: Math.floor(Math.random() * 38) + 1, y: Math.floor(Math.random() * 23) + 1 };
+                dir = { x: 1, y: 0 };
+                nextDir = { x: 1, y: 0 };
+                score = 0;
+                gameOver = false;
+                speed = 100;
+                document.getElementById('gameScore').textContent = 'Score: 0';
+            }
+
+            function update() {
+                if (gameOver) return;
+                dir = nextDir;
+                const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+                if (head.x < 0 || head.x >= 40 || head.y < 0 || head.y >= 25) { gameOver = true; return; }
+                if (snake.some(s => s.x === head.x && s.y === head.y)) { gameOver = true; return; }
+
+                snake.unshift(head);
+
+                if (head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    speed = Math.max(50, speed - 2);
+                    food = { x: Math.floor(Math.random() * 38) + 1, y: Math.floor(Math.random() * 23) + 1 };
+                    document.getElementById('gameScore').textContent = 'Score: ' + score;
+                } else {
+                    snake.pop();
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a1a';
+                ctx.fillRect(0, 0, 800, 500);
+
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.1)';
+                for (let i = 0; i < 40; i++) { ctx.beginPath(); ctx.moveTo(i * 20, 0); ctx.lineTo(i * 20, 500); ctx.stroke(); }
+                for (let i = 0; i < 25; i++) { ctx.beginPath(); ctx.moveTo(0, i * 20); ctx.lineTo(800, i * 20); ctx.stroke(); }
+
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ff88';
+                ctx.fillStyle = '#00ff88';
+                snake.forEach((s, i) => {
+                    ctx.fillRect(s.x * 20 + 1, s.y * 20 + 1, 18, 18);
+                });
+
+                ctx.shadowColor = '#ff3366';
+                ctx.fillStyle = '#ff3366';
+                ctx.fillRect(food.x * 20 + 1, food.y * 20 + 1, 18, 18);
+                ctx.shadowBlur = 0;
+
+                if (gameOver) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, 800, 500);
+                    ctx.fillStyle = '#ff3366';
+                    ctx.font = '30px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', 400, 220);
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.font = '18px Rajdhani';
+                    ctx.fillText('Score: ' + score, 400, 260);
+                    ctx.fillText('Press SPACE to restart', 400, 300);
+                }
+            }
+
+            function loop(timestamp) {
+                if (currentGame !== 'neonSnake') return;
+                if (timestamp - lastTime > speed) { update(); lastTime = timestamp; }
+                draw();
+                gameLoop = requestAnimationFrame(loop);
+            }
+            currentGame = 'neonSnake';
+            loop(0);
+        }
+
+        // ===================== SPACE SHOOTER =====================
+        function startSpaceShooter() {
+            let player = { x: 400, y: 440, w: 40, h: 30 };
+            let bullets = [];
+            let enemies = [];
+            let particles = [];
+            let score = 0;
+            let gameOver = false;
+            let keys = {};
+            let enemySpawnTimer = 0;
+
+            document.onkeydown = e => {
+                keys[e.key] = true;
+                if (e.key === ' ' && !gameOver) {
+                    bullets.push({ x: player.x + 18, y: player.y, w: 4, h: 12, dy: -8 });
+                }
+                if (e.key === ' ' && gameOver) resetShooter();
+            };
+            document.onkeyup = e => keys[e.key] = false;
+
+            function resetShooter() {
+                player = { x: 400, y: 440, w: 40, h: 30 };
+                bullets = []; enemies = []; particles = [];
+                score = 0; gameOver = false; enemySpawnTimer = 0;
+                document.getElementById('gameScore').textContent = 'Score: 0';
+            }
+
+            function update() {
+                if (gameOver) return;
+
+                if (keys['ArrowLeft']) player.x -= 6;
+                if (keys['ArrowRight']) player.x += 6;
+                player.x = Math.max(0, Math.min(760, player.x));
+
+                bullets.forEach(b => b.y += b.dy);
+                bullets = bullets.filter(b => b.y > -20);
+
+                enemySpawnTimer++;
+                if (enemySpawnTimer > 40) {
+                    enemies.push({ x: Math.random() * 760, y: -30, w: 30, h: 30, dx: (Math.random() - 0.5) * 2, dy: 2 + Math.random() * 2 });
+                    enemySpawnTimer = 0;
+                }
+
+                enemies.forEach(e => { e.x += e.dx; e.y += e.dy; });
+                enemies = enemies.filter(e => e.y < 520);
+
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        if (bullets[i] && enemies[j] &&
+                            bullets[i].x < enemies[j].x + enemies[j].w &&
+                            bullets[i].x + bullets[i].w > enemies[j].x &&
+                            bullets[i].y < enemies[j].y + enemies[j].h &&
+                            bullets[i].y + bullets[i].h > enemies[j].y) {
+
+                            for (let k = 0; k < 8; k++) {
+                                particles.push({
+                                    x: enemies[j].x + 15, y: enemies[j].y + 15,
+                                    dx: (Math.random() - 0.5) * 6, dy: (Math.random() - 0.5) * 6,
+                                    life: 30, color: ['#ff3366', '#ffaa00', '#00f0ff'][Math.floor(Math.random() * 3)]
+                                });
+                            }
+                            score += 10;
+                            document.getElementById('gameScore').textContent = 'Score: ' + score;
+                            bullets.splice(i, 1);
+                            enemies.splice(j, 1);
+                            break;
+                        }
+                    }
+                }
+
+                enemies.forEach(e => {
+                    if (e.x < player.x + player.w && e.x + e.w > player.x &&
+                        e.y < player.y + player.h && e.y + e.h > player.y) {
+                        gameOver = true;
+                    }
+                });
+
+                particles.forEach(p => { p.x += p.dx; p.y += p.dy; p.life--; });
+                particles = particles.filter(p => p.life > 0);
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a1a';
+                ctx.fillRect(0, 0, 800, 500);
+
+                for (let i = 0; i < 50; i++) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5})`;
+                    ctx.fillRect(Math.random() * 800, Math.random() * 500, 1, 1);
+                }
+
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00f0ff';
+                ctx.fillStyle = '#00f0ff';
+                ctx.beginPath();
+                ctx.moveTo(player.x + 20, player.y);
+                ctx.lineTo(player.x, player.y + 30);
+                ctx.lineTo(player.x + 40, player.y + 30);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.shadowColor = '#00ff88';
+                ctx.fillStyle = '#00ff88';
+                bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+
+                ctx.shadowColor = '#ff3366';
+                ctx.fillStyle = '#ff3366';
+                enemies.forEach(e => {
+                    ctx.beginPath();
+                    ctx.arc(e.x + 15, e.y + 15, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.shadowBlur = 0;
+
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life / 30;
+                    ctx.fillRect(p.x, p.y, 3, 3);
+                    ctx.globalAlpha = 1;
+                });
+
+                if (gameOver) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, 800, 500);
+                    ctx.fillStyle = '#ff3366';
+                    ctx.font = '30px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', 400, 220);
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.font = '18px Rajdhani';
+                    ctx.fillText('Score: ' + score, 400, 260);
+                    ctx.fillText('Press SPACE to restart', 400, 300);
+                }
+            }
+
+            function loop() {
+                if (currentGame !== 'spaceShooter') return;
+                update(); draw();
+                gameLoop = requestAnimationFrame(loop);
+            }
+            currentGame = 'spaceShooter';
+            loop();
+        }
+
+        // ===================== NEON BREAKER =====================
+        function startNeonBreaker() {
+            let paddle = { x: 350, y: 470, w: 100, h: 15 };
+            let ball = { x: 400, y: 300, dx: 4, dy: -4, r: 8 };
+            let bricks = [];
+            let score = 0;
+            let gameOver = false;
+            let mouseX = 400;
+
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 10; c++) {
+                    bricks.push({
+                        x: 50 + c * 70, y: 50 + r * 30,
+                        w: 60, h: 20,
+                        color: ['#00f0ff', '#00ff88', '#ffaa00', '#ff3366', '#aa00ff'][r],
+                        active: true
+                    });
+                }
+            }
+
+            canvas.onmousemove = e => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+            };
+            document.onkeydown = e => {
+                if (e.key === 'ArrowLeft') mouseX -= 20;
+                if (e.key === 'ArrowRight') mouseX += 20;
+                if (e.key === ' ' && gameOver) resetBreaker();
+            };
+
+            function resetBreaker() {
+                paddle = { x: 350, y: 470, w: 100, h: 15 };
+                ball = { x: 400, y: 300, dx: 4, dy: -4, r: 8 };
+                score = 0; gameOver = false;
+                bricks.forEach(b => b.active = true);
+                document.getElementById('gameScore').textContent = 'Score: 0';
+            }
+
+            function update() {
+                if (gameOver) return;
+                paddle.x = Math.max(0, Math.min(700, mouseX - 50));
+
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+                if (ball.x <= ball.r || ball.x >= 800 - ball.r) ball.dx *= -1;
+                if (ball.y <= ball.r) ball.dy *= -1;
+                if (ball.y >= 500) { gameOver = true; return; }
+
+                if (ball.y + ball.r >= paddle.y && ball.y - ball.r <= paddle.y + paddle.h &&
+                    ball.x >= paddle.x && ball.x <= paddle.x + paddle.w) {
+                    ball.dy = -Math.abs(ball.dy);
+                    ball.dx = (ball.x - (paddle.x + paddle.w / 2)) / 10;
+                }
+
+                bricks.forEach(b => {
+                    if (b.active && ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w &&
+                        ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h) {
+                        b.active = false;
+                        ball.dy *= -1;
+                        score += 10;
+                        document.getElementById('gameScore').textContent = 'Score: ' + score;
+                    }
+                });
+
+                if (bricks.every(b => !b.active)) {
+                    bricks.forEach(b => b.active = true);
+                    ball.dx *= 1.2; ball.dy *= 1.2;
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a1a';
+                ctx.fillRect(0, 0, 800, 500);
+
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00f0ff';
+                ctx.fillStyle = '#00f0ff';
+                ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+
+                ctx.shadowColor = '#ffffff';
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+                ctx.fill();
+
+                bricks.forEach(b => {
+                    if (b.active) {
+                        ctx.shadowColor = b.color;
+                        ctx.fillStyle = b.color;
+                        ctx.fillRect(b.x, b.y, b.w, b.h);
+                    }
+                });
+                ctx.shadowBlur = 0;
+
+                if (gameOver) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, 800, 500);
+                    ctx.fillStyle = '#ff3366';
+                    ctx.font = '30px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', 400, 220);
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.font = '18px Rajdhani';
+                    ctx.fillText('Score: ' + score, 400, 260);
+                    ctx.fillText('Press SPACE to restart', 400, 300);
+                }
+            }
+
+            function loop() {
+                if (currentGame !== 'neonBreaker') return;
+                update(); draw();
+                gameLoop = requestAnimationFrame(loop);
+            }
+            currentGame = 'neonBreaker';
+            loop();
+        }
 
         window.addEventListener('storage', function(e) {
             if (e.key === 'night_services') checkPlatformStatus();
