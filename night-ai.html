@@ -495,8 +495,21 @@ function exportChat() {
 
 createParticles();
 
-// Auto-hide welcome after 1 second
-setTimeout(function() {
+// Auto-hide welcome after 1 second (but check maintenance first)
+setTimeout(async function() {
+  const services = await getServices();
+  const platform = services.find(s => s.id === PLATFORM_ID);
+  const auth = getAuth();
+
+  // Don't auto-show if maintenance mode is on (unless admin)
+  if (platform && platform.status === 'maintenance' && !(auth.isLoggedIn && auth.role === 'admin')) {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.querySelector('.header').style.display = 'none';
+    document.querySelector('.main-container').style.display = 'none';
+    document.getElementById('maintenanceBanner').classList.add('show');
+    return;
+  }
+
   hideWelcome();
   updateStatus("online", "AI Ready");
 }, 1000);
@@ -535,31 +548,48 @@ async function checkPlatformAccess() {
   const auth = getAuth();
   const maintenanceBanner = document.getElementById('maintenanceBanner');
   const authOverlay = document.getElementById('authOverlay');
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  const header = document.querySelector('.header');
+  const mainContainer = document.querySelector('.main-container');
 
   // Admin ALWAYS bypasses everything
   if (auth.isLoggedIn && auth.role === 'admin') {
     maintenanceBanner.classList.remove('show');
     authOverlay.classList.add('hidden');
+    if (welcomeScreen) welcomeScreen.classList.add('hidden');
+    if (header) header.style.display = '';
+    if (mainContainer) mainContainer.style.display = '';
     return;
   }
 
-  // Check maintenance mode
+  // Check maintenance mode FIRST - blocks everyone except admin
   if (platform && platform.status === 'maintenance') {
-    maintenanceBanner.classList.add('show');
+    // Hide everything else
     authOverlay.classList.add('hidden');
+    if (welcomeScreen) welcomeScreen.classList.add('hidden');
+    if (header) header.style.display = 'none';
+    if (mainContainer) mainContainer.style.display = 'none';
+    // Show maintenance banner
+    maintenanceBanner.classList.add('show');
     return;
   }
+
+  maintenanceBanner.classList.remove('show');
 
   // Check if user is authenticated (user or guest)
   if (auth.isLoggedIn && (auth.role === 'user' || auth.role === 'guest')) {
-    maintenanceBanner.classList.remove('show');
     authOverlay.classList.add('hidden');
+    if (welcomeScreen) welcomeScreen.classList.add('hidden');
+    if (header) header.style.display = '';
+    if (mainContainer) mainContainer.style.display = '';
     return;
   }
 
   // Not authenticated - show auth gate
-  maintenanceBanner.classList.remove('show');
   authOverlay.classList.remove('hidden');
+  if (welcomeScreen) welcomeScreen.classList.add('hidden');
+  if (header) header.style.display = 'none';
+  if (mainContainer) mainContainer.style.display = 'none';
 }
 
 async function handleAuthSignIn() {
