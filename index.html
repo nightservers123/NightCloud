@@ -470,6 +470,7 @@
             .nav-links { gap: 15px; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="bg-grid"></div>
@@ -597,6 +598,14 @@
             </div>
 
             <div class="admin-section">
+                <h3>🔄 System Controls</h3>
+                <p style="color: var(--text-dim); margin-bottom: 15px; font-size: 0.85rem;">
+                    Reset all services to default state. This will restore deleted services and set all to Online.
+                </p>
+                <button class="btn" onclick="resetToDefaults()" style="width: auto; padding: 12px 30px;">Reset to Defaults</button>
+            </div>
+
+            <div class="admin-section">
                 <h3>👤 Admin Account</h3>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
                     <div>
@@ -720,10 +729,10 @@
 
         const DEFAULT_SERVICES = [
             { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '☁️', status: 'online', url: 'night-cloud.html' },
-            { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'maintenance', url: 'night-play.html' },
+            { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'online', url: 'night-play.html' },
             { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '✉️', status: 'online', url: 'night-mail.html' },
-            { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '🤖', status: 'maintenance', url: 'night-ai.html' },
-            { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '🛒', status: 'maintenance', url: 'night-store.html' },
+            { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '🤖', status: 'online', url: 'night-ai.html' },
+            { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '🛒', status: 'online', url: 'night-store.html' },
             { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '🔒', status: 'online', url: 'night-secure.html' }
         ];
 
@@ -1123,6 +1132,17 @@
             renderAdminServices();
             renderPublicServices();
             renderGuestServices();
+        }
+
+        function resetToDefaults() {
+            if (confirm('This will reset ALL services to default (6 platforms, all Online). Any custom services will be lost. Continue?')) {
+                localStorage.setItem('night_services', JSON.stringify(DEFAULT_SERVICES));
+                saveServices(DEFAULT_SERVICES);
+                renderAdminServices();
+                renderPublicServices();
+                renderGuestServices();
+                alert('Services reset to defaults!');
+            }
         }
 
         function openEditModal(id) {
