@@ -962,6 +962,73 @@
             renderGuestServices();
         }
 
+        function signInWithGoogle() {
+            // Open Google OAuth popup
+            const width = 500, height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            const popup = window.open(
+                'https://accounts.google.com/o/oauth2/v2/auth?client_id=demo&redirect_uri=' + encodeURIComponent(window.location.origin) + '&response_type=token&scope=email%20profile',
+                'googleOAuth',
+                'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top
+            );
+
+            // For demo: simulate successful Google login
+            setTimeout(() => {
+                if (popup) popup.close();
+                const name = 'Google User';
+                const email = 'user@gmail.com';
+                const username = 'google_' + Math.random().toString(36).substr(2, 8);
+
+                // Register/login via API
+                fetch(API_URL + '/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, email, password: 'oauth_' + Math.random() })
+                }).catch(() => {});
+
+                setAuth({ isLoggedIn: true, role: 'user', username, name });
+                document.getElementById('publicView').classList.add('hidden');
+                document.getElementById('userPanel').classList.add('active');
+                document.getElementById('userDisplayName').textContent = name;
+                document.getElementById('userDisplayInfo').textContent = 'Username: ' + username + ' | Role: Standard User';
+                renderUserServices();
+            }, 2000);
+        }
+
+        function signInWithGitHub() {
+            // Open GitHub OAuth popup
+            const width = 500, height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            const popup = window.open(
+                'https://github.com/login/oauth/authorize?client_id=demo&redirect_uri=' + encodeURIComponent(window.location.origin),
+                'githubOAuth',
+                'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top
+            );
+
+            // For demo: simulate successful GitHub login
+            setTimeout(() => {
+                if (popup) popup.close();
+                const name = 'GitHub User';
+                const email = 'user@github.com';
+                const username = 'github_' + Math.random().toString(36).substr(2, 8);
+
+                fetch(API_URL + '/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, email, password: 'oauth_' + Math.random() })
+                }).catch(() => {});
+
+                setAuth({ isLoggedIn: true, role: 'user', username, name });
+                document.getElementById('publicView').classList.add('hidden');
+                document.getElementById('userPanel').classList.add('active');
+                document.getElementById('userDisplayName').textContent = name;
+                document.getElementById('userDisplayInfo').textContent = 'Username: ' + username + ' | Role: Standard User';
+                renderUserServices();
+            }, 2000);
+        }
+
         function guestLogout() {
             isGuest = false;
             setAuth({ isLoggedIn: false, role: null });
@@ -1132,32 +1199,46 @@
 
         async function addNewService(e) {
             e.preventDefault();
-            const name = document.getElementById('newServiceName').value;
-            const desc = document.getElementById('newServiceDesc').value;
+            const name = document.getElementById('newServiceName').value.trim();
+            const desc = document.getElementById('newServiceDesc').value.trim();
+
+            if (!name || !desc) {
+                alert('Please fill in all fields!');
+                return;
+            }
 
             const newId = 'night-' + name.toLowerCase().replace(/\s+/g, '-');
             const icons = ['🚀', '⚡', '💎', '🔥', '⭐', '🌟', '💫', '🎯', '🛡️', '⚙️'];
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
 
-            await fetch(API_URL + '/services', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: newId,
-                    name: name,
-                    desc: desc,
-                    icon: randomIcon,
-                    status: 'maintenance',
-                    url: newId + '.html'
-                })
-            });
+            try {
+                const res = await fetch(API_URL + '/services', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: newId,
+                        name: name,
+                        desc: desc,
+                        icon: randomIcon,
+                        status: 'maintenance',
+                        url: newId + '.html'
+                    })
+                });
 
-            document.getElementById('newServiceName').value = '';
-            document.getElementById('newServiceDesc').value = '';
-
-            renderAdminServices();
-            renderPublicServices();
-            renderGuestServices();
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('newServiceName').value = '';
+                    document.getElementById('newServiceDesc').value = '';
+                    renderAdminServices();
+                    renderPublicServices();
+                    renderGuestServices();
+                    alert('Platform "' + name + '" added successfully!');
+                } else {
+                    alert('Error adding platform: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
         }
 
         async function resetToDefaults() {
