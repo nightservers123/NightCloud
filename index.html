@@ -1050,13 +1050,17 @@
         }
 
         async function handleServiceClick(name) {
-            if (isAdmin) {
-                alert('Admin Access: ' + name + ' — Full access granted.');
-                return;
-            }
             const services = await getServices();
             const service = services.find(s => s.name === name);
             if (service && service.status === 'maintenance') {
+                if (isAdmin) {
+                    if (service.url) {
+                        window.location.href = service.url;
+                    } else {
+                        alert('Admin Access: ' + name + ' — Full access granted.');
+                    }
+                    return;
+                }
                 showMaintenance(name);
             } else if (service && service.status === 'online') {
                 if (service.url) {
@@ -1099,7 +1103,7 @@
             const list = document.getElementById('guestServiceList');
             if (!list) return;
             list.innerHTML = services.map(s => `
-                <div class="service-item">
+                <div class="service-item" style="cursor: pointer;" onclick="handleGuestServiceClick('${s.id}', '${s.name}')">
                     <div class="service-info">
                         <span class="service-icon">${s.icon}</span>
                         <div class="service-details">
@@ -1109,9 +1113,22 @@
                     </div>
                     <div class="service-status-toggle">
                         <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'}">${s.status.toUpperCase()}</span>
+                        ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">→ Click to Access</span>' : ''}
                     </div>
                 </div>
             `).join('');
+        }
+
+        async function handleGuestServiceClick(id, name) {
+            const services = await getServices();
+            const service = services.find(s => s.id === id);
+            if (service && service.status === 'maintenance') {
+                showMaintenance(name);
+            } else if (service && service.status === 'online' && service.url) {
+                window.open(service.url, '_blank');
+            } else {
+                alert(name + ' is coming soon!');
+            }
         }
 
         async function renderUserServices() {
