@@ -472,6 +472,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="bg-grid"></div>
@@ -765,21 +766,36 @@
         }
 
         async function saveServices(services) {
-            localStorage.setItem('night_services', JSON.stringify(services));
             try {
-                await fetch(API_URL + '/services', {
+                const res = await fetch(API_URL + '/services', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(services)
                 });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const result = await res.json();
+                if (!result.success) throw new Error('API returned success=false');
+                // Only update localStorage after confirmed API success
+                localStorage.setItem('night_services', JSON.stringify(services));
+                console.log('Synced to API successfully');
             } catch (err) {
                 console.warn('Could not sync to API, saved locally only:', err.message);
+                // Still save locally as fallback
+                localStorage.setItem('night_services', JSON.stringify(services));
             }
             window.dispatchEvent(new StorageEvent('storage', {
                 key: 'night_services',
                 newValue: JSON.stringify(services)
             }));
         }
+
+        
+        async function forceRefreshFromAPI() {
+            // Clear localStorage cache to force fresh API fetch
+            localStorage.removeItem('night_services');
+            return await getServices();
+        }
+        
 
         function getAuth() {
             return JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false,"role":null}');
@@ -809,18 +825,18 @@
         let isGuest = false;
         let editingServiceId = null;
 
-        function init() {
+        async function init() {
             initServer();
             createParticles();
             checkExistingSession();
             setupGuestPanelClicks();
-            setTimeout(() => {
-                renderPublicServices();
-                if (isAdmin) renderAdminServices();
-                if (isGuest) renderGuestServices();
-                const auth = getAuth();
-                if (auth.isLoggedIn && auth.role === 'user') renderUserServices();
-            }, 0);
+            // Force refresh from API on every load to ensure sync
+            await forceRefreshFromAPI();
+            await renderPublicServices();
+            if (isAdmin) await renderAdminServices();
+            if (isGuest) await renderGuestServices();
+            const auth = getAuth();
+            if (auth.isLoggedIn && auth.role === 'user') await renderUserServices();
         }
 
         function setupGuestPanelClicks() {
@@ -1341,6 +1357,8 @@
 
         setInterval(async () => {
             if (document.visibilityState === 'visible') {
+                // Always fetch fresh data from API
+                await forceRefreshFromAPI();
                 await renderPublicServices();
                 if (isAdmin) await renderAdminServices();
                 if (isGuest) await renderGuestServices();
