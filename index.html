@@ -747,8 +747,16 @@
             }
         }
 
-        function getServices() {
-            return JSON.parse(localStorage.getItem('night_services') || '[]');
+        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
+
+        async function getServices() {
+            try {
+                const res = await fetch(API_URL + '/services');
+                return await res.json();
+            } catch (err) {
+                console.error('API error:', err);
+                return [];
+            }
         }
 
         function saveServices(services) {
@@ -793,26 +801,26 @@
             }
         }
 
-        function checkExistingSession() {
+        async function checkExistingSession() {
             const auth = getAuth();
             if (auth.isLoggedIn && auth.role === 'admin') {
                 isAdmin = true;
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('adminPanel').classList.add('active');
                 document.getElementById('adminBadge').classList.remove('hidden');
-                renderAdminServices();
+                await renderAdminServices();
             } else if (auth.isLoggedIn && auth.role === 'guest') {
                 isGuest = true;
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('guestPanel').classList.add('active');
                 document.getElementById('guestBadge').classList.remove('hidden');
-                renderGuestServices();
+                await renderGuestServices();
             } else if (auth.isLoggedIn && auth.role === 'user') {
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('userPanel').classList.add('active');
                 document.getElementById('userDisplayName').textContent = auth.name || auth.username;
                 document.getElementById('userDisplayInfo').textContent = 'Username: ' + auth.username + ' | Role: Standard User';
-                renderUserServices();
+                await renderUserServices();
             }
         }
 
@@ -877,18 +885,17 @@
             }
         }
 
-        function handleSignUp(e) {
+        async function handleSignUp(e) {
             e.preventDefault();
 
             // Check if Night Cloud is under maintenance
-            const services = getServices();
+            const services = await getServices();
             const nightCloud = services.find(s => s.id === 'night-cloud');
             if (nightCloud && nightCloud.status === 'maintenance') {
                 showMaintenance('Night Cloud Account Creation');
                 return;
             }
 
-            // Get form values by ID (reliable)
             const name = document.getElementById('signupName').value.trim();
             const username = document.getElementById('signupUsername').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
@@ -905,23 +912,20 @@
                 return;
             }
 
-            // Store user in localStorage
-            let users = JSON.parse(localStorage.getItem('night_users') || '[]');
-            if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
-                alert('Username already taken!');
-                return;
-            }
-            if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-                alert('Email already registered!');
-                return;
-            }
+            const res = await fetch(API_URL + '/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, username, email, password })
+            });
 
-            users.push({ name, username, email, password });
-            localStorage.setItem('night_users', JSON.stringify(users));
+            const data = await res.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
 
             alert('Account created successfully! Welcome to Night Cloud, ' + name + '!');
 
-            // Clear the form
             document.getElementById('signupName').value = '';
             document.getElementById('signupUsername').value = '';
             document.getElementById('signupEmail').value = '';
@@ -929,7 +933,6 @@
             document.getElementById('signupConfirmPassword').value = '';
 
             switchTab('signin');
-            // Pre-fill the sign-in field
             document.getElementById('signinUsernameOrEmail').value = username;
         }
 
@@ -1032,8 +1035,8 @@
             `).join('');
         }
 
-        function renderGuestServices() {
-            const services = getServices();
+        async function renderGuestServices() {
+            const services = await getServices();
             const list = document.getElementById('guestServiceList');
             list.innerHTML = services.map(s => `
                 <div class="service-item">
@@ -1051,8 +1054,8 @@
             `).join('');
         }
 
-        function renderUserServices() {
-            const services = getServices();
+        async function renderUserServices() {
+            const services = await getServices();
             const list = document.getElementById('userServiceList');
             list.innerHTML = services.map(s => `
                 <div class="service-item" style="cursor: pointer;" onclick="handleUserServiceClick('${s.id}', '${s.name}')">
@@ -1071,8 +1074,8 @@
             `).join('');
         }
 
-        function handleUserServiceClick(id, name) {
-            const services = getServices();
+        async function handleUserServiceClick(id, name) {
+            const services = await getServices();
             const service = services.find(s => s.id === id);
             if (service && service.status === 'maintenance') {
                 showMaintenance(name);
@@ -1106,26 +1109,28 @@
             }
         }
 
-        function addNewService(e) {
+        async function addNewService(e) {
             e.preventDefault();
             const name = document.getElementById('newServiceName').value;
             const desc = document.getElementById('newServiceDesc').value;
 
-            const services = getServices();
             const newId = 'night-' + name.toLowerCase().replace(/\s+/g, '-');
             const icons = ['🚀', '⚡', '💎', '🔥', '⭐', '🌟', '💫', '🎯', '🛡️', '⚙️'];
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
 
-            services.push({
-                id: newId,
-                name: name,
-                desc: desc,
-                icon: randomIcon,
-                status: 'maintenance',
-                url: newId + '.html'
+            await fetch(API_URL + '/services', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: newId,
+                    name: name,
+                    desc: desc,
+                    icon: randomIcon,
+                    status: 'maintenance',
+                    url: newId + '.html'
+                })
             });
 
-            saveServices(services);
             document.getElementById('newServiceName').value = '';
             document.getElementById('newServiceDesc').value = '';
 
@@ -1134,10 +1139,9 @@
             renderGuestServices();
         }
 
-        function resetToDefaults() {
+        async function resetToDefaults() {
             if (confirm('This will reset ALL services to default (6 platforms, all Online). Any custom services will be lost. Continue?')) {
-                localStorage.setItem('night_services', JSON.stringify(DEFAULT_SERVICES));
-                saveServices(DEFAULT_SERVICES);
+                await fetch(API_URL + '/reset', { method: 'POST' });
                 renderAdminServices();
                 renderPublicServices();
                 renderGuestServices();
@@ -1236,15 +1240,16 @@
             });
         });
 
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'night_services') {
-                renderPublicServices();
-                if (isAdmin) renderAdminServices();
-                if (isGuest) renderGuestServices();
+        // Poll for updates every 3 seconds for real-time sync
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                await renderPublicServices();
+                if (isAdmin) await renderAdminServices();
+                if (isGuest) await renderGuestServices();
                 const auth = getAuth();
-                if (auth.isLoggedIn && auth.role === 'user') renderUserServices();
+                if (auth.isLoggedIn && auth.role === 'user') await renderUserServices();
             }
-        });
+        }, 3000);
 
         init();
     </script>
