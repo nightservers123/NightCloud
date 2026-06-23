@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Night Play | Night Industries</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0a0f;
+            --secondary: #12121a;
+            --accent: #00f0ff;
+            --accent-dim: #00f0ff33;
+            --text: #e0e0e5;
+            --text-dim: #6b6b7b;
+            --error: #ff3366;
+            --success: #00ff88;
+            --warning: #ffaa00;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
+            backdrop-filter: blur(10px);
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700;
+            color: var(--accent); text-shadow: 0 0 20px var(--accent-dim);
+            letter-spacing: 2px; cursor: pointer; text-decoration: none;
+        }
+        .back-link {
+            color: var(--text-dim); text-decoration: none; font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        .back-link:hover { color: var(--accent); }
+        .main-container {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            min-height: 100vh; padding: 100px 20px 40px;
+            width: 100%; max-width: 500px;
+        }
+        .platform-header {
+            text-align: center; margin-bottom: 40px;
+        }
+        .platform-header h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.5rem;
+            color: var(--text); text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            margin-bottom: 10px;
+        }
+        .platform-header p {
+            color: var(--text-dim); font-size: 1rem; letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        /* Maintenance Banner */
+        .maintenance-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.1), rgba(255, 51, 102, 0.1));
+            border: 1px solid var(--warning);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+        .maintenance-banner.active { display: block; }
+        .maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; }
+        .maintenance-banner h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
+            color: var(--warning); margin-bottom: 15px;
+        }
+        .maintenance-banner p { color: var(--text-dim); line-height: 1.6; }
+        /* Sign In Form */
+        .auth-container {
+            display: none;
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 20px; padding: 40px; width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease;
+        }
+        .auth-container.active { display: block; }
+        .auth-container h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.2rem;
+            color: var(--accent); margin-bottom: 25px; text-align: center;
+            letter-spacing: 2px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; margin-bottom: 8px;
+            color: var(--text-dim); font-size: 0.85rem;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .form-group input {
+            width: 100%; padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 10px; color: var(--text);
+            font-family: 'Rajdhani', sans-serif; font-size: 1rem;
+            letter-spacing: 1px; transition: all 0.3s ease; outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--accent), #0088aa);
+            border: none; border-radius: 10px;
+            color: var(--primary); font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem; font-weight: 700; letter-spacing: 3px;
+            text-transform: uppercase; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
+        }
+        .status-indicator {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 20px; justify-content: center;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .status-dot.maintenance { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .footer {
+            margin-top: 40px; text-align: center;
+            color: var(--text-dim); font-size: 0.8rem;
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo">◀ NIGHT INDUSTRIES</a>
+        <a href="index.html" class="back-link">← Back to Master Control</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="platform-header">
+            <h1>🎮 NIGHT PLAY</h1>
+            <p>Gaming & Entertainment Platform</p>
+        </div>
+
+        <!-- Maintenance Mode Banner -->
+        <div class="maintenance-banner" id="maintenanceBanner">
+            <div class="icon">🔧</div>
+            <h2>Platform Under Maintenance</h2>
+            <p>Night Play is currently undergoing scheduled maintenance.<br>
+            Please check back later or contact support for updates.</p>
+        </div>
+
+        <!-- Normal Sign In -->
+        <div class="auth-container" id="signInContainer">
+            <div class="status-indicator">
+                <div class="status-dot online" id="statusDot"></div>
+                <span style="color: var(--success); font-size: 0.85rem; letter-spacing: 2px;">PLATFORM ONLINE</span>
+            </div>
+            <h2>SIGN IN TO NIGHT PLAY</h2>
+            <form onsubmit="handlePlatformSignIn(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="you@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn">Enter Night Play</button>
+            </form>
+        </div>
+
+        <div class="footer">
+            <p> 2026 Night Industries. <a href="index.html">Master Control</a></p>
+        </div>
+    </div>
+
+    <script>
+        // ===================== PLATFORM CONNECTOR =====================
+        // This connects to the Night Industries Master Control Panel
+        // and checks if this platform is in maintenance mode.
+
+        // ⚠️ CHANGE THIS for each platform you create
+        const PLATFORM_ID = 'night-play';
+
+        function getServices() {
+            return JSON.parse(localStorage.getItem('night_services') || '[]');
+        }
+
+        function checkPlatformStatus() {
+            const services = getServices();
+            const platform = services.find(s => s.id === PLATFORM_ID);
+
+            const maintenanceBanner = document.getElementById('maintenanceBanner');
+            const signInContainer = document.getElementById('signInContainer');
+            const statusDot = document.getElementById('statusDot');
+
+            if (!platform) {
+                // Platform not found in master list - default to maintenance
+                maintenanceBanner.classList.add('active');
+                signInContainer.classList.remove('active');
+                return;
+            }
+
+            if (platform.status === 'maintenance') {
+                maintenanceBanner.classList.add('active');
+                signInContainer.classList.remove('active');
+            } else {
+                maintenanceBanner.classList.remove('active');
+                signInContainer.classList.add('active');
+            }
+        }
+
+        function handlePlatformSignIn(e) {
+            e.preventDefault();
+            // Add your actual Night Play sign-in logic here
+            alert('Welcome to Night Play! (Add your real auth logic here)');
+        }
+
+        // Listen for real-time updates from admin panel
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'night_services') {
+                checkPlatformStatus();
+            }
+        });
+
+        // Check on page load
+        checkPlatformStatus();
+    </script>
+</body>
+</html>
