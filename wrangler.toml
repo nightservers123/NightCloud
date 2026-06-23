@@ -1,0 +1,7 @@
+name = "night-cloud-api"
+main = "src/index.js"
+compatibility_date = "2026-06-23"
+
+[[kv_namespaces]]
+binding = "NIGHT_CLOUD_DATA"
+id = "PASTE_YOUR_KV_NAMESPACE_ID_HERE"
