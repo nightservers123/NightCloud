@@ -813,6 +813,7 @@
             initServer();
             createParticles();
             checkExistingSession();
+            setupGuestPanelClicks();
             setTimeout(() => {
                 renderPublicServices();
                 if (isAdmin) renderAdminServices();
@@ -820,6 +821,36 @@
                 const auth = getAuth();
                 if (auth.isLoggedIn && auth.role === 'user') renderUserServices();
             }, 0);
+        }
+
+        function setupGuestPanelClicks() {
+            // Use document-level event delegation for guest panel - works even if element is hidden initially
+            document.addEventListener('click', async function(e) {
+                const item = e.target.closest('#guestServiceList .service-item');
+                if (!item) return;
+                const id = item.getAttribute('data-service-id');
+                const name = item.getAttribute('data-service-name');
+                if (!id || !name) return;
+
+                const services = await getServices();
+                const service = services.find(s => s.id === id);
+                if (service && service.status === 'maintenance') {
+                    showMaintenance(name);
+                } else if (service && service.status === 'online' && service.url) {
+                    window.open(service.url, '_blank');
+                } else {
+                    alert(name + ' is coming soon!');
+                }
+            });
+
+            // Public page feature card clicks
+            document.addEventListener('click', async function(e) {
+                const card = e.target.closest('#featuresGrid .feature-card');
+                if (!card) return;
+                const name = card.getAttribute('data-service-name');
+                if (!name) return;
+                await handleServiceClick(name);
+            });
         }
 
         function createParticles() {
@@ -1040,7 +1071,7 @@
             const grid = document.getElementById('featuresGrid');
             if (!grid) return;
             grid.innerHTML = services.map(s => `
-                <div class="feature-card" onclick="handleServiceClick('${s.name}')">
+                <div class="feature-card" data-service-name="${s.name}">
                     <span class="feature-icon">${s.icon}</span>
                     <h3>${s.name}</h3>
                     <p>${s.desc}</p>
@@ -1103,7 +1134,7 @@
             const list = document.getElementById('guestServiceList');
             if (!list) return;
             list.innerHTML = services.map(s => `
-                <div class="service-item" style="cursor: pointer;" onclick="handleGuestServiceClick('${s.id}', '${s.name}')">
+                <div class="service-item" style="cursor: pointer;" data-service-id="${s.id}" data-service-name="${s.name}">
                     <div class="service-info">
                         <span class="service-icon">${s.icon}</span>
                         <div class="service-details">
@@ -1117,18 +1148,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        async function handleGuestServiceClick(id, name) {
-            const services = await getServices();
-            const service = services.find(s => s.id === id);
-            if (service && service.status === 'maintenance') {
-                showMaintenance(name);
-            } else if (service && service.status === 'online' && service.url) {
-                window.open(service.url, '_blank');
-            } else {
-                alert(name + ' is coming soon!');
-            }
         }
 
         async function renderUserServices() {
@@ -1333,4 +1352,4 @@
         init();
     </script>
 </body>
-</html>
+</html>1
