@@ -92,50 +92,84 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .welcome-btn { margin-top: 24px; padding: 12px 36px; background: linear-gradient(135deg, var(--accent), #7c3aed); border: none; border-radius: 10px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; opacity: 0; transform: translateY(15px); }
 .welcome-btn.visible { opacity: 1; transform: translateY(0); }
 .welcome-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 30px rgba(99,102,241,0.4); }
-.model-select { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
-.model-select label { font-size: 12px; color: var(--text-dim); }
-.model-select select { padding: 8px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; cursor: pointer; }
-.model-select select:focus { border-color: var(--accent); }
+.provider-section { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: center; max-width: 400px; }
+.provider-section label { font-size: 12px; color: var(--text-dim); }
+.provider-section select { padding: 8px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; cursor: pointer; width: 100%; }
+.provider-section select:focus { border-color: var(--accent); }
+.provider-section input { padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; width: 100%; outline: none; }
+.provider-section input:focus { border-color: var(--accent); }
+.provider-section input::placeholder { color: var(--text-dim); }
 .progress-bar { margin-top: 16px; width: 300px; height: 6px; background: var(--card); border-radius: 3px; overflow: hidden; display: none; }
 .progress-bar.active { display: block; }
 .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #a855f7); border-radius: 3px; transition: width 0.3s; }
 .progress-text { margin-top: 8px; font-size: 11px; color: var(--text-dim); }
 .error-box { margin-top: 16px; padding: 12px 16px; background: rgba(239,68,68,0.1); border: 1px solid var(--error); border-radius: 8px; font-size: 12px; color: var(--error); max-width: 400px; text-align: center; display: none; }
 .error-box.active { display: block; }
+.info-box { margin-top: 12px; padding: 10px 14px; background: rgba(99,102,241,0.1); border: 1px solid var(--accent); border-radius: 8px; font-size: 11px; color: var(--text-dim); max-width: 400px; text-align: center; display: none; }
+.info-box.active { display: block; }
 @media (max-width: 1000px) { .main-container { grid-template-columns: 1fr; } .sidebar, .right-panel { display: none; } }
 ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; } ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 <div class="welcome-screen" id="welcomeScreen">
-  <div class="welcome-logo">🌙</div>
+  <div class="welcome-logo">&#127769;</div>
   <div class="welcome-title">NightAI</div>
   <div class="welcome-sub">Night Cloud</div>
   <div class="welcome-loading" id="welcomeLoading">
     <div class="welcome-spinner"></div>
-    <span id="welcomeText">Checking WebGPU...</span>
+    <span id="welcomeText">Detecting AI backends...</span>
   </div>
-  <button class="welcome-btn" id="welcomeBtn" onclick="startAI()" style="display:none;">Load AI Model</button>
-  <div class="model-select" id="modelSelect">
-    <label>🤖 Choose Model</label>
-    <select id="modelPicker">
-      <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama 3.2 1B (Fast, ~360MB)</option>
-      <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">SmolLM2 360M (Ultra-fast, ~200MB)</option>
-      <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B (Smarter, ~1.8GB)</option>
-      <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">Phi 3.5 Mini (3.8B, ~2.3GB)</option>
+  <button class="welcome-btn" id="welcomeBtn" onclick="enterApp()" style="display:none;">Enter NightAI</button>
+
+  <div class="provider-section" id="providerSection">
+    <label>&#129302; AI Backend</label>
+    <select id="backendSelect" onchange="onBackendChange()">
+      <option value="auto">&#9881; Auto-detect (Recommended)</option>
+      <option value="webllm">&#127760; WebLLM (Browser GPU)</option>
+      <option value="custom">&#128187; My Server (Ollama/vLLM/etc)</option>
+      <option value="ovh">&#9729; OVHcloud (Free, No Key)</option>
+      <option value="hf">&#129302; Hugging Face (Free Tier)</option>
+      <option value="openrouter">&#128260; OpenRouter (Free Models)</option>
     </select>
+
+    <div id="customInputs" style="display:none;width:100%;">
+      <input type="text" id="customURL" placeholder="Server URL (e.g. http://localhost:11434/v1)" value="http://localhost:11434/v1">
+      <input type="password" id="customKey" placeholder="API Key (optional)" style="margin-top:6px;">
+      <input type="text" id="customModel" placeholder="Model name (e.g. llama3.1:8b)" value="llama3.1:8b" style="margin-top:6px;">
+    </div>
+
+    <div id="hfInput" style="display:none;width:100%;">
+      <input type="password" id="hfKey" placeholder="Hugging Face API Key" style="margin-top:6px;">
+    </div>
+
+    <div id="orInput" style="display:none;width:100%;">
+      <input type="password" id="orKey" placeholder="OpenRouter API Key" style="margin-top:6px;">
+    </div>
+
+    <div id="webllmSelect" style="display:none;width:100%;">
+      <select id="webllmModel" style="margin-top:6px;">
+        <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama 3.2 1B (~360MB, Fast)</option>
+        <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">SmolLM2 360M (~200MB, Ultra-fast)</option>
+        <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B (~1.8GB, Smarter)</option>
+        <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">Phi 3.5 Mini (~2.3GB, Smartest)</option>
+      </select>
+    </div>
   </div>
+
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
   <div class="progress-text" id="progressText"></div>
   <div class="error-box" id="errorBox"></div>
+  <div class="info-box" id="infoBox"></div>
 </div>
 
 <div class="particles" id="particles"></div>
 
 <header class="header">
   <div class="logo">
-    <div class="logo-icon">🌙</div>
+    <div class="logo-icon">&#127769;</div>
     <div>
       <div class="logo-text">NightAI</div>
       <div class="logo-sub">Night Cloud</div>
@@ -149,16 +183,16 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 
 <div class="main-container">
   <aside class="sidebar">
-    <div class="sidebar-title"><span>⚡</span> Quick Actions</div>
-    <div class="nav-item active" onclick="setMode('chat')"><span class="nav-icon">💬</span> Chat</div>
-    <div class="nav-item" onclick="setMode('code')"><span class="nav-icon">💻</span> Code</div>
-    <div class="nav-item" onclick="setMode('explain')"><span class="nav-icon">🔍</span> Explain</div>
-    <div class="nav-item" onclick="setMode('debug')"><span class="nav-icon">🐛</span> Debug</div>
-    <div class="nav-item" onclick="setMode('generate')"><span class="nav-icon">✨</span> Generate</div>
-    <div class="nav-item" onclick="clearChat()"><span class="nav-icon">🗑️</span> Clear</div>
+    <div class="sidebar-title"><span>&#9889;</span> Quick Actions</div>
+    <div class="nav-item active" onclick="setMode('chat')"><span class="nav-icon">&#128172;</span> Chat</div>
+    <div class="nav-item" onclick="setMode('code')"><span class="nav-icon">&#128187;</span> Code</div>
+    <div class="nav-item" onclick="setMode('explain')"><span class="nav-icon">&#128269;</span> Explain</div>
+    <div class="nav-item" onclick="setMode('debug')"><span class="nav-icon">&#128030;</span> Debug</div>
+    <div class="nav-item" onclick="setMode('generate')"><span class="nav-icon">&#10024;</span> Generate</div>
+    <div class="nav-item" onclick="clearChat()"><span class="nav-icon">&#128465;</span> Clear</div>
     <div class="model-info">
-      <h4>🧠 Model Info</h4>
-      <div class="model-stat"><span>Engine</span><span id="engineName">WebLLM</span></div>
+      <h4>&#129504; Model Info</h4>
+      <div class="model-stat"><span>Backend</span><span id="backendName">--</span></div>
       <div class="model-stat"><span>Model</span><span id="modelName">--</span></div>
       <div class="model-stat"><span>Status</span><span id="trainStatus">Loading</span></div>
       <div class="model-stat"><span>Speed</span><span id="speed">--</span></div>
@@ -167,56 +201,82 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 
   <div class="chat-area">
     <div class="chat-header">
-      <h3>💬 Conversation</h3>
+      <h3>&#128172; Conversation</h3>
       <div class="chat-actions">
-        <button class="btn-icon" onclick="exportChat()" title="Export">📥</button>
-        <button class="btn-icon" onclick="clearChat()" title="Clear">🗑️</button>
+        <button class="btn-icon" onclick="exportChat()" title="Export">&#128229;</button>
+        <button class="btn-icon" onclick="clearChat()" title="Clear">&#128465;</button>
       </div>
     </div>
     <div class="messages-container" id="messagesContainer">
       <div class="message ai">
-        <div class="msg-header"><div class="msg-avatar">🌙</div><span>NightAI</span></div>
-        <div>Welcome to <b>NightAI</b>! I'm a real LLM running entirely in your browser via WebLLM. No servers, no API keys, 100% private. Click <b>Load AI Model</b> above to download the model (one-time, then works offline). I can write code, answer questions, generate HTML, debug, and more!</div>
+        <div class="msg-header"><div class="msg-avatar">&#127769;</div><span>NightAI</span></div>
+        <div>Welcome to <b>NightAI</b>! Select your AI backend above and click <b>Enter NightAI</b>. Connect your own server (Ollama, vLLM, etc.), use free cloud APIs, or run models directly in your browser.</div>
       </div>
     </div>
     <div class="input-area">
       <div class="input-wrapper">
         <textarea class="chat-input" id="chatInput" placeholder="Ask me anything..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
       </div>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>
     </div>
   </div>
 
   <aside class="right-panel">
     <div class="panel-card">
-      <h3>✨ Try These</h3>
-      <button class="suggestion-chip" onclick="sendSuggestion('Write a complete HTML landing page for a coffee shop')">☕ Coffee shop page</button>
-      <button class="suggestion-chip" onclick="sendSuggestion('Explain quantum computing simply')">🧠 Quantum computing</button>
-      <button class="suggestion-chip" onclick="sendSuggestion('Write a Python web scraper')">🐍 Python scraper</button>
-      <button class="suggestion-chip" onclick="sendSuggestion('Create a React dashboard')">📊 React dashboard</button>
-      <button class="suggestion-chip" onclick="sendSuggestion('Debug: function add(a,b){return a+b}')">🐛 Debug JS</button>
+      <h3>&#10024; Try These</h3>
+      <button class="suggestion-chip" onclick="sendSuggestion('Write a complete HTML landing page for a coffee shop')">&#9749; Coffee shop page</button>
+      <button class="suggestion-chip" onclick="sendSuggestion('Explain quantum computing simply')">&#129504; Quantum computing</button>
+      <button class="suggestion-chip" onclick="sendSuggestion('Write a Python web scraper')">&#128013; Python scraper</button>
+      <button class="suggestion-chip" onclick="sendSuggestion('Create a React dashboard')">&#128202; React dashboard</button>
+      <button class="suggestion-chip" onclick="sendSuggestion('Debug: function add(a,b){return a+b}')">&#128030; Debug JS</button>
     </div>
     <div class="panel-card">
-      <h3>📊 Capabilities</h3>
+      <h3>&#128202; Capabilities</h3>
       <div style="display:flex;flex-direction:column;gap:6px;">
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">✓</span> Real LLM in browser</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">✓</span> 100% offline after load</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">✓</span> No API keys ever</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">✓</span> Code generation</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">✓</span> HTML/CSS/JS creation</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">✓</span> Any topic Q&A</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">&#10003;</span> Your own servers</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">&#10003;</span> Free cloud APIs</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">&#10003;</span> Browser GPU models</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">&#10003;</span> Code generation</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">&#10003;</span> HTML/CSS/JS creation</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="color:var(--success);">&#10003;</span> Any topic Q&A</div>
       </div>
     </div>
   </aside>
 </div>
 
 <script type="module">
-import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+
+// ==================== NIGHTAI - UNIVERSAL AI BACKEND ====================
+// Supports: Your servers (Ollama/vLLM), WebLLM, Free APIs
 
 let engine = null;
+let backendType = "auto";
 let isProcessing = false;
 let messageHistory = [];
 let currentModel = "";
+let webllmModule = null;
+
+const BACKENDS = {
+  ovh: {
+    name: "OVHcloud",
+    baseURL: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+    model: "Meta-Llama-3_3-70B-Instruct",
+    needsKey: false
+  },
+  hf: {
+    name: "Hugging Face",
+    baseURL: "https://api-inference.huggingface.co/v1",
+    model: "meta-llama/Llama-3.1-8B-Instruct",
+    needsKey: true
+  },
+  openrouter: {
+    name: "OpenRouter",
+    baseURL: "https://openrouter.ai/api/v1",
+    model: "deepseek/deepseek-chat:free",
+    needsKey: true
+  }
+};
 
 function createParticles() {
   const container = document.getElementById("particles");
@@ -250,7 +310,7 @@ function setProgress(pct, text) {
   const txt = document.getElementById("progressText");
   bar.classList.add("active");
   fill.style.width = pct + "%";
-  txt.textContent = text || ("Downloading model... " + pct.toFixed(1) + "%");
+  txt.textContent = text || ("Loading... " + pct.toFixed(1) + "%");
 }
 
 function showError(msg) {
@@ -263,65 +323,142 @@ function hideError() {
   document.getElementById("errorBox").classList.remove("active");
 }
 
-async function checkWebGPU() {
-  if (!navigator.gpu) {
-    showError("WebGPU not available. Please use Chrome 113+, Edge 113+, or Firefox. Safari support coming soon.");
-    return false;
-  }
-  const adapter = await navigator.gpu.requestAdapter();
-  if (!adapter) {
-    showError("No GPU adapter found. Your device may not support WebGPU.");
-    return false;
-  }
-  return true;
+function showInfo(msg) {
+  const box = document.getElementById("infoBox");
+  box.textContent = msg;
+  box.classList.add("active");
 }
 
-window.startAI = async function() {
-  hideError();
-  const modelId = document.getElementById("modelPicker").value;
-  currentModel = modelId;
-  document.getElementById("welcomeBtn").disabled = true;
-  document.getElementById("modelPicker").disabled = true;
-  
+function hideInfo() {
+  document.getElementById("infoBox").classList.remove("active");
+}
+
+function showBtn() {
+  const btn = document.getElementById("welcomeBtn");
+  btn.style.display = "block";
+  setTimeout(() => btn.classList.add("visible"), 50);
+}
+
+// ==================== BACKEND DETECTION ====================
+
+async function checkWebGPU() {
   try {
-    setWelcomeText("Loading model... (first time only)");
-    updateStatus("loading", "Downloading model...");
-    
-    engine = await webllm.CreateMLCEngine(modelId, {
-      initProgressCallback: (progress) => {
-        const pct = progress.progress * 100;
-        setProgress(pct, progress.text || ("Loading... " + pct.toFixed(1) + "%"));
-      }
-    });
-    
-    setProgress(100, "Model loaded!");
-    document.getElementById("modelName").textContent = modelId.split("-")[0] + " " + modelId.split("-")[1];
-    document.getElementById("trainStatus").textContent = "Ready";
-    updateStatus("online", "AI Online");
-    
-    setTimeout(() => {
-      document.getElementById("welcomeScreen").classList.add("hidden");
-    }, 500);
-    
+    if (!navigator.gpu) return false;
+    const adapter = await navigator.gpu.requestAdapter();
+    return !!adapter;
+  } catch (e) { return false; }
+}
+
+async function detectBestBackend() {
+  setWelcomeText("Detecting best AI backend...");
+  const hasWebGPU = await checkWebGPU();
+  if (hasWebGPU) {
+    showInfo("WebGPU detected! You can run AI models directly in your browser.");
+    return "webllm";
+  }
+  showInfo("No local GPU found. Using free OVHcloud backend.");
+  return "ovh";
+}
+
+// ==================== BACKEND SWITCHING ====================
+
+window.onBackendChange = function() {
+  const sel = document.getElementById("backendSelect").value;
+  backendType = sel === "auto" ? "auto" : sel;
+  document.getElementById("customInputs").style.display = (sel === "custom") ? "block" : "none";
+  document.getElementById("hfInput").style.display = (sel === "hf") ? "block" : "none";
+  document.getElementById("orInput").style.display = (sel === "openrouter") ? "block" : "none";
+  document.getElementById("webllmSelect").style.display = (sel === "webllm") ? "block" : "none";
+  hideError(); hideInfo();
+};
+
+// ==================== ENTER APP ====================
+
+window.enterApp = async function() {
+  hideError(); hideInfo();
+  const btn = document.getElementById("welcomeBtn");
+  btn.disabled = true;
+
+  let selected = document.getElementById("backendSelect").value;
+  if (selected === "auto") {
+    selected = await detectBestBackend();
+    backendType = selected;
+  }
+
+  try {
+    if (selected === "webllm") {
+      await initWebLLM();
+    } else if (selected === "custom") {
+      await initCustomServer();
+    } else if (BACKENDS[selected]) {
+      await initCloudBackend(selected);
+    }
+    document.getElementById("welcomeScreen").classList.add("hidden");
+    updateStatus("online");
   } catch (err) {
-    showError("Failed to load model: " + err.message);
-    document.getElementById("welcomeBtn").disabled = false;
-    document.getElementById("modelPicker").disabled = false;
-    updateStatus("offline", "Load Failed");
+    showError("Failed to initialize: " + err.message);
+    btn.disabled = false;
+    updateStatus("offline", "Init Failed");
   }
 };
 
-// Check WebGPU on load
-(async function init() {
-  createParticles();
-  const hasGPU = await checkWebGPU();
-  if (hasGPU) {
-    setWelcomeText("WebGPU detected! Choose a model and click Load.");
-    document.getElementById("welcomeBtn").style.display = "block";
-    document.getElementById("welcomeBtn").classList.add("visible");
-    document.getElementById("welcomeLoading").style.display = "none";
+// ==================== WEBLLM BACKEND ====================
+
+async function initWebLLM() {
+  setWelcomeText("Loading WebLLM...");
+  updateStatus("loading", "Loading WebLLM...");
+  const modelId = document.getElementById("webllmModel").value;
+  currentModel = modelId.split("-")[0] + " " + modelId.split("-")[1];
+  const webllm = await import("https://esm.run/@mlc-ai/web-llm");
+  webllmModule = webllm;
+  engine = await webllm.CreateMLCEngine(modelId, {
+    initProgressCallback: (progress) => {
+      const pct = progress.progress * 100;
+      setProgress(pct, progress.text || ("Downloading model... " + pct.toFixed(1) + "%"));
+    }
+  });
+  setProgress(100, "Model loaded!");
+  document.getElementById("backendName").textContent = "WebLLM (Browser)";
+  document.getElementById("modelName").textContent = currentModel;
+  document.getElementById("trainStatus").textContent = "Ready";
+}
+
+// ==================== CUSTOM SERVER BACKEND ====================
+
+async function initCustomServer() {
+  setWelcomeText("Connecting to your server...");
+  updateStatus("loading", "Connecting to server...");
+  const url = document.getElementById("customURL").value.trim() || "http://localhost:11434/v1";
+  const key = document.getElementById("customKey").value.trim();
+  const model = document.getElementById("customModel").value.trim() || "llama3.1:8b";
+  engine = { type: "custom", baseURL: url, apiKey: key || "anonymous", model: model };
+  currentModel = model;
+  document.getElementById("backendName").textContent = "Your Server";
+  document.getElementById("modelName").textContent = model;
+  document.getElementById("trainStatus").textContent = "Connected";
+  setWelcomeText("Connected to your server!");
+}
+
+// ==================== CLOUD BACKEND ====================
+
+async function initCloudBackend(name) {
+  const cfg = BACKENDS[name];
+  setWelcomeText("Connecting to " + cfg.name + "...");
+  updateStatus("loading", "Connecting to " + cfg.name + "...");
+  let key = "";
+  if (cfg.needsKey) {
+    key = name === "hf" ? document.getElementById("hfKey").value.trim() : document.getElementById("orKey").value.trim();
+    if (!key) throw new Error("Please enter your " + cfg.name + " API key");
   }
-})();
+  engine = { type: "cloud", baseURL: cfg.baseURL, apiKey: key || "anonymous", model: cfg.model };
+  currentModel = cfg.model.split("/").pop();
+  document.getElementById("backendName").textContent = cfg.name;
+  document.getElementById("modelName").textContent = currentModel;
+  document.getElementById("trainStatus").textContent = "Connected";
+  setWelcomeText("Connected to " + cfg.name + "!");
+}
+
+// ==================== CHAT FUNCTIONS ====================
 
 function getSystemPrompt(mode) {
   const base = "You are NightAI, a helpful AI assistant built by Night Cloud. ";
@@ -360,13 +497,13 @@ window.sendSuggestion = function(text) {
   sendMessage();
 };
 
+// ==================== SEND MESSAGE ====================
+
 window.sendMessage = async function() {
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
-  if (!text || isProcessing || !engine) {
-    if (!engine) addMessage("Please wait for the model to finish loading first!", "ai");
-    return;
-  }
+  if (!text || isProcessing) return;
+  if (!engine) { addMessage("Please select a backend and click Enter NightAI first!", "ai"); return; }
 
   isProcessing = true;
   input.value = "";
@@ -389,41 +526,23 @@ window.sendMessage = async function() {
     else if (navText.includes("generate")) mode = "generate";
 
     const startTime = performance.now();
-    
-    const response = await engine.chat.completions.create({
-      messages: [
-        { role: "system", content: getSystemPrompt(mode) },
-        ...messageHistory
-      ],
-      temperature: 0.7,
-      max_tokens: 2048,
-      stream: true
-    });
 
-    hideTyping();
-    let fullText = "";
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message ai";
-    msgDiv.innerHTML = '<div class="msg-header"><div class="msg-avatar">🌙</div><span>NightAI</span></div><div id="streamContent"></div>';
-    document.getElementById("messagesContainer").appendChild(msgDiv);
-    
-    for await (const chunk of response) {
-      const content = chunk.choices[0]?.delta?.content || "";
-      fullText += content;
-      msgDiv.querySelector("#streamContent").innerHTML = formatMarkdown(fullText);
-      document.getElementById("messagesContainer").scrollTop = document.getElementById("messagesContainer").scrollHeight;
+    if (engine.type === "webllm") {
+      await sendWebLLM(mode);
+    } else {
+      await sendAPI(mode);
     }
-    
-    messageHistory.push({ role: "assistant", content: fullText });
-    
+
     const elapsed = (performance.now() - startTime) / 1000;
-    const tokens = fullText.split(/\s+/).length;
-    document.getElementById("speed").textContent = Math.round(tokens / elapsed) + " tok/s";
+    document.getElementById("speed").textContent = elapsed.toFixed(1) + "s";
     updateStatus("online", "AI Ready");
 
   } catch (err) {
     hideTyping();
-    addMessage('<div style="background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:8px;padding:10px;font-size:12px;color:#ef4444;">⚠️ ' + escapeHtml(err.message) + '</div>', "ai");
+    let msg = err.message;
+    if (err.name === "AbortError") msg = "Request cancelled.";
+    else if (err.message.includes("Failed to fetch")) msg = "Network error. Check your connection or server.";
+    addMessage('<div style="background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:8px;padding:10px;font-size:12px;color:#ef4444;">&#9888; ' + escapeHtml(msg) + '</div>', "ai");
     updateStatus("offline", "Error");
   }
 
@@ -431,23 +550,131 @@ window.sendMessage = async function() {
   document.getElementById("sendBtn").disabled = false;
 };
 
+// ==================== WEBLLM SEND ====================
+
+async function sendWebLLM(mode) {
+  const response = await engine.chat.completions.create({
+    messages: [
+      { role: "system", content: getSystemPrompt(mode) },
+      ...messageHistory
+    ],
+    temperature: 0.7,
+    max_tokens: 2048,
+    stream: true
+  });
+
+  hideTyping();
+  let fullText = "";
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "message ai";
+  msgDiv.innerHTML = '<div class="msg-header"><div class="msg-avatar">&#127769;</div><span>NightAI</span></div><div id="streamContent"></div>';
+  document.getElementById("messagesContainer").appendChild(msgDiv);
+
+  for await (const chunk of response) {
+    const content = chunk.choices[0]?.delta?.content || "";
+    fullText += content;
+    msgDiv.querySelector("#streamContent").innerHTML = formatMarkdown(fullText);
+    scrollToBottom();
+  }
+
+  messageHistory.push({ role: "assistant", content: fullText });
+}
+
+// ==================== API SEND (Custom/Cloud) ====================
+
+async function sendAPI(mode) {
+  const response = await fetch(engine.baseURL + "/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + engine.apiKey
+    },
+    body: JSON.stringify({
+      model: engine.model,
+      messages: [
+        { role: "system", content: getSystemPrompt(mode) },
+        ...messageHistory
+      ],
+      temperature: 0.7,
+      max_tokens: 2048,
+      stream: true
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error("API Error (" + response.status + "): " + err);
+  }
+
+  hideTyping();
+  let fullText = "";
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "message ai";
+  msgDiv.innerHTML = '<div class="msg-header"><div class="msg-avatar">&#127769;</div><span>NightAI</span></div><div id="streamContent"></div>';
+  document.getElementById("messagesContainer").appendChild(msgDiv);
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("
+");
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        if (data === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices[0]?.delta?.content || "";
+          if (content) {
+            fullText += content;
+            msgDiv.querySelector("#streamContent").innerHTML = formatMarkdown(fullText);
+            scrollToBottom();
+          }
+        } catch (e) {}
+      }
+    }
+  }
+
+  messageHistory.push({ role: "assistant", content: fullText });
+}
+
+// ==================== UI HELPERS ====================
+
 function formatMarkdown(text) {
   text = escapeHtml(text);
-  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
+  // Code blocks using RegExp to avoid regex literal issues
+  const codeBlockRe = new RegExp("```(\\w+)?\n?([\\s\\S]*?)```", "g");
+  text = text.replace(codeBlockRe, function(match, lang, code) {
     return '<pre><span class="lang-label">' + (lang || "code") + '</span><code>' + code.trim() + '</code></pre>';
   });
-  text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
-  text = text.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
-  text = text.replace(/\*([^*]+)\*/g, "<i>$1</i>");
-  text = text.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
-  text = text.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
-  text = text.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
-  text = text.replace(/^\s*[-*]\s+(.+)$/gm, "<li>$1</li>");
-  text = text.replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>");
-  text = text.replace(/<\/ul>\s*<ul>/g, "");
-  text = text.replace(/^>\s+(.+)$/gm, "<blockquote>$1</blockquote>");
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-  text = text.replace(/\n/g, "<br>");
+  // Inline code
+  text = text.replace(new RegExp("`([^`]+)`", "g"), "<code>$1</code>");
+  // Bold
+  text = text.replace(new RegExp("\\*\\*([^*]+)\\*\\*", "g"), "<b>$1</b>");
+  // Italic
+  text = text.replace(new RegExp("\\*([^*]+)\\*", "g"), "<i>$1</i>");
+  // Headers
+  text = text.replace(new RegExp("^###\\s+(.+)$", "gm"), "<h3>$1</h3>");
+  text = text.replace(new RegExp("^##\\s+(.+)$", "gm"), "<h2>$1</h2>");
+  text = text.replace(new RegExp("^#\\s+(.+)$", "gm"), "<h1>$1</h1>");
+  // Lists
+  text = text.replace(new RegExp("^\\s*[-*]\\s+(.+)$", "gm"), "<li>$1</li>");
+  text = text.replace(new RegExp("(<li>.*<\/li>\n?)+", "g"), "<ul>$&</ul>");
+  text = text.replace(new RegExp("<\/ul>\s*<ul>", "g"), "");
+  // Blockquotes
+  text = text.replace(new RegExp("^>\\s+(.+)$", "gm"), "<blockquote>$1</blockquote>");
+  // Links
+  text = text.replace(new RegExp("\[([^\]]+)\]\(([^)]+)\)", "g"), '<a href="$2" target="_blank">$1</a>');
+  // Line breaks
+  text = text.replace(new RegExp("\n", "g"), "<br>");
   return text;
 }
 
@@ -461,11 +688,11 @@ function addMessage(text, sender) {
   const container = document.getElementById("messagesContainer");
   const msg = document.createElement("div");
   msg.className = "message " + sender;
-  const avatar = sender === "user" ? "👤" : "🌙";
+  const avatar = sender === "user" ? "&#128100;" : "&#127769;";
   const name = sender === "user" ? "You" : "NightAI";
   msg.innerHTML = '<div class="msg-header"><div class="msg-avatar">' + avatar + '</div><span>' + name + '</span></div><div>' + text + '</div>';
   container.appendChild(msg);
-  container.scrollTop = container.scrollHeight;
+  scrollToBottom();
 }
 
 function showTyping() {
@@ -475,12 +702,17 @@ function showTyping() {
   typing.id = "typingIndicator";
   typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
   container.appendChild(typing);
-  container.scrollTop = container.scrollHeight;
+  scrollToBottom();
 }
 
 function hideTyping() {
   const el = document.getElementById("typingIndicator");
   if (el) el.remove();
+}
+
+function scrollToBottom() {
+  const container = document.getElementById("messagesContainer");
+  container.scrollTop = container.scrollHeight;
 }
 
 window.clearChat = function() {
@@ -500,6 +732,24 @@ window.exportChat = function() {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+// ==================== INIT ====================
+
+(async function init() {
+  createParticles();
+  const hasWebGPU = await checkWebGPU();
+  if (hasWebGPU) {
+    setWelcomeText("WebGPU detected! Choose a backend and click Enter.");
+    showInfo("WebGPU available! You can run AI models directly in your browser.");
+  } else {
+    setWelcomeText("No WebGPU detected. Use your server or cloud backends.");
+    showInfo("WebGPU not available. Select 'My Server' to connect your Ollama/vLLM, or use free cloud backends.");
+  }
+  showBtn();
+  onBackendChange();
+})();
+
+
 </script>
 </body>
 </html>
