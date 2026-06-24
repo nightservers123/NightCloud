@@ -100,11 +100,12 @@
             50% { box-shadow: 0 0 20px rgba(255, 51, 102, 0.8); }
         }
         .main-container {
-            position: relative; z-index: 1; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; z-index: 1;
             padding: 100px 20px 40px;
+            width: 100%;
+            text-align: center;
         }
-        .hero { text-align: center; margin-bottom: 60px; }
+        .hero { text-align: center; margin-bottom: 60px; width: 100%; }
         .hero h1 {
             font-family: 'Orbitron', sans-serif; font-size: 4rem; font-weight: 900;
             color: var(--text); text-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
@@ -122,6 +123,7 @@
             border-radius: 20px; padding: 50px; width: 100%; max-width: 450px;
             position: relative; overflow: hidden;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 240, 255, 0.05);
+            margin: 0 auto;
         }
         .auth-container::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -232,6 +234,7 @@
         }
         .dashboard-preview {
             margin-top: 60px; width: 100%; max-width: 900px;
+            margin-left: auto; margin-right: auto;
         }
         .section-title {
             font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
@@ -347,7 +350,7 @@
             60% { clip-path: inset(5% 0 80% 0); transform: translate(-2px, 0); }
             80% { clip-path: inset(30% 0 40% 0); transform: translate(2px, 0); }
         }
-        .admin-panel, .guest-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; }
+        .admin-panel, .guest-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; }
         .admin-panel.active, .guest-panel.active { display: block; animation: fadeIn 0.5s ease; }
         .admin-header, .guest-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -449,7 +452,7 @@
         }
         .platform-link:hover { text-shadow: 0 0 10px var(--accent-glow); }
         /* User Panel Styles */
-        .user-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; }
+        .user-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; }
         .user-panel.active { display: block; animation: fadeIn 0.5s ease; }
         .user-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -485,12 +488,12 @@
             .nav-links { gap: 12px; }
             .nav-link { font-size: 0.8rem; }
             .admin-badge, .guest-badge { padding: 3px 8px; font-size: 0.6rem; }
-            .main-container { padding: 80px 12px 20px; }
-            .hero { margin-bottom: 30px; }
+            .main-container { padding: 80px 12px 20px; align-items: center; }
+            .hero { margin-bottom: 30px; align-items: center; }
             .hero h1 { font-size: 2.2rem; letter-spacing: 2px; }
             .hero .subtitle { font-size: 0.9rem; letter-spacing: 4px; }
             .hero .tagline { font-size: 0.85rem; }
-            .auth-container { padding: 24px 16px; border-radius: 16px; }
+            .auth-container { padding: 24px 16px; border-radius: 16px; margin: 0 auto; }
             .auth-tabs { margin-bottom: 24px; }
             .auth-tab { padding: 12px 8px; font-size: 0.8rem; }
             .form-group { margin-bottom: 18px; }
@@ -505,9 +508,9 @@
             .feature-card h3 { font-size: 0.8rem; }
             .feature-card p { font-size: 0.75rem; }
             .feature-card .status { padding: 3px 8px; font-size: 0.6rem; }
-            .dashboard-preview { margin-top: 30px; }
+            .dashboard-preview { margin-top: 30px; margin-left: auto; margin-right: auto; }
             .section-title { font-size: 1.1rem; margin-bottom: 20px; }
-            .admin-panel, .guest-panel, .user-panel { margin-top: 20px; }
+            .admin-panel, .guest-panel, .user-panel { margin-top: 20px; margin-left: auto; margin-right: auto; }
             .admin-header, .guest-header, .user-header {
                 flex-direction: column; gap: 12px; align-items: flex-start;
                 margin-bottom: 20px; padding-bottom: 15px;
