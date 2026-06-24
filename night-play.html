@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Night Play | Night Cloud</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,13 +17,15 @@
             --success: #00ff88;
             --warning: #ffaa00;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; }
         body {
             font-family: 'Rajdhani', sans-serif;
             background: var(--primary);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
         .bg-grid {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -39,6 +41,7 @@
             display: flex; justify-content: center; align-items: center;
             background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         .logo {
             font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700;
@@ -108,6 +111,7 @@
             border-radius: 10px; color: var(--text);
             font-family: 'Rajdhani', sans-serif; font-size: 1rem;
             letter-spacing: 1px; transition: all 0.3s ease; outline: none;
+            -webkit-appearance: none;
         }
         .form-group input:focus {
             border-color: var(--accent);
@@ -121,6 +125,8 @@
             font-size: 0.9rem; font-weight: 700; letter-spacing: 3px;
             text-transform: uppercase; cursor: pointer;
             transition: all 0.3s ease;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .btn:hover {
             transform: translateY(-2px);
@@ -232,6 +238,8 @@
             font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
             font-weight: 700; letter-spacing: 1px; cursor: pointer;
             transition: all 0.3s ease;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .play-btn:hover {
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
@@ -280,6 +288,8 @@
         .game-canvas {
             display: block;
             background: #0a0a1a;
+            max-width: 100%;
+            height: auto;
         }
         .game-controls {
             margin-top: 15px;
@@ -294,13 +304,58 @@
             margin-top: 10px;
         }
         @media (max-width: 768px) {
-            .games-grid { grid-template-columns: 1fr; }
-            .dashboard-header { flex-direction: column; gap: 15px; }
-            .navbar { padding: 15px 20px; }
-            .game-canvas { width: 100%; height: auto; }
+            html { font-size: 14px; }
+            .navbar { padding: 12px 16px; }
+            .logo { font-size: 1.1rem; }
+            .main-container { padding: 80px 12px 20px; }
+            .platform-header { margin-bottom: 24px; }
+            .platform-header h1 { font-size: 1.6rem; }
+            .platform-header p { font-size: 0.8rem; letter-spacing: 2px; }
+            .auth-container { padding: 24px 16px; border-radius: 16px; }
+            .auth-container h2 { font-size: 1rem; }
+            .form-group { margin-bottom: 16px; }
+            .form-group input { padding: 12px 14px; font-size: 16px; }
+            .btn { padding: 14px; font-size: 0.8rem; letter-spacing: 2px; }
+            .games-grid { grid-template-columns: 1fr; gap: 16px; }
+            .dashboard-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .dashboard-title { font-size: 1.2rem; }
+            .user-info { width: 100%; justify-content: space-between; }
+            .logout-btn { padding: 6px 14px; font-size: 0.7rem; }
+            .game-card { border-radius: 12px; }
+            .game-thumbnail { height: 140px; font-size: 2.5rem; }
+            .game-info { padding: 16px; }
+            .game-title { font-size: 0.9rem; }
+            .game-desc { font-size: 0.8rem; }
+            .section-title { font-size: 1rem; margin: 24px 0 16px; }
+            .footer { margin-top: 40px; padding: 20px; font-size: 0.75rem; }
+            .game-overlay { padding: 12px; }
+            .game-overlay-header { max-width: 100%; padding: 0; margin-bottom: 12px; }
+            .game-overlay-title { font-size: 1rem; }
+            .game-overlay-close { padding: 6px 14px; font-size: 0.7rem; }
+            .game-canvas-container { width: 100%; }
+            .game-canvas { width: 100% !important; height: auto !important; max-height: 60vh; }
+            .game-score { font-size: 1rem; }
+            .game-controls { font-size: 0.75rem; }
+            .maintenance-banner { padding: 24px; }
+            .maintenance-banner .icon { font-size: 3rem; }
+            .maintenance-banner h2 { font-size: 1.2rem; }
+        }
+        @media (max-width: 480px) {
+            html { font-size: 13px; }
+            .platform-header h1 { font-size: 1.4rem; }
+            .game-thumbnail { height: 120px; font-size: 2rem; }
+            .game-overlay-title { font-size: 0.9rem; }
+            .game-canvas { max-height: 50vh; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .games-grid { grid-template-columns: repeat(2, 1fr); }
+            .main-container { max-width: 100%; padding: 100px 30px 40px; }
+        }
+        @media (min-width: 1400px) {
+            .main-container { max-width: 1200px; }
+            .games-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
-<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -315,7 +370,7 @@
 
         <!-- Maintenance Mode Banner -->
         <div class="maintenance-banner" id="maintenanceBanner">
-            <div class="icon">🔧</div>
+            <div class="icon">&#128295;</div>
             <h2>Platform Under Maintenance</h2>
             <p>Night Play is currently undergoing scheduled maintenance.<br>
             Please check back later or contact support for updates.</p>
@@ -345,9 +400,9 @@
         <!-- GAMING DASHBOARD -->
         <div class="gaming-dashboard" id="gamingDashboard">
             <div class="dashboard-header">
-                <h2 class="dashboard-title">🎮 NIGHT PLAY</h2>
+                <h2 class="dashboard-title">&#127918; NIGHT PLAY</h2>
                 <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-avatar" id="userAvatar">&#128100;</div>
                     <span id="displayUsername">Player</span>
                     <button class="logout-btn" onclick="playLogout()">LOGOUT</button>
                 </div>
@@ -356,7 +411,7 @@
             <h3 class="section-title">🔥 Play Now</h3>
             <div class="games-grid">
                 <div class="game-card" onclick="startGame('neonPong')">
-                    <div class="game-thumbnail">🏓</div>
+                    <div class="game-thumbnail">&#127955;</div>
                     <div class="game-info">
                         <div class="game-title">Neon Pong</div>
                         <div class="game-desc">Classic Pong with a neon cyberpunk twist. Use W/S or Arrow keys.</div>
@@ -367,7 +422,7 @@
                     </div>
                 </div>
                 <div class="game-card" onclick="startGame('neonSnake')">
-                    <div class="game-thumbnail">🐍</div>
+                    <div class="game-thumbnail">&#128013;</div>
                     <div class="game-info">
                         <div class="game-title">Neon Snake</div>
                         <div class="game-desc">Eat glowing orbs and grow your snake. Don't hit the walls!</div>
@@ -378,7 +433,7 @@
                     </div>
                 </div>
                 <div class="game-card" onclick="startGame('spaceShooter')">
-                    <div class="game-thumbnail">🚀</div>
+                    <div class="game-thumbnail">&#128640;</div>
                     <div class="game-info">
                         <div class="game-title">Void Defender</div>
                         <div class="game-desc">Defend the galaxy from alien invaders. Arrow keys + Space to shoot.</div>
@@ -389,7 +444,7 @@
                     </div>
                 </div>
                 <div class="game-card" onclick="startGame('neonBreaker')">
-                    <div class="game-thumbnail">🧱</div>
+                    <div class="game-thumbnail">&#129521;</div>
                     <div class="game-info">
                         <div class="game-title">Neon Breaker</div>
                         <div class="game-desc">Break all the bricks with your neon paddle. Mouse or arrow keys.</div>
@@ -411,7 +466,7 @@
     <div class="game-overlay" id="gameOverlay">
         <div class="game-overlay-header">
             <h2 class="game-overlay-title" id="gameOverlayTitle">Game</h2>
-            <button class="game-overlay-close" onclick="closeGame()">✕ CLOSE</button>
+            <button class="game-overlay-close" onclick="closeGame()">&#10005; CLOSE</button>
         </div>
         <div class="game-canvas-container">
             <canvas id="gameCanvas" class="game-canvas" width="800" height="500"></canvas>
@@ -542,19 +597,19 @@
             document.getElementById('gameScore').textContent = 'Score: 0';
 
             if (gameName === 'neonPong') {
-                document.getElementById('gameOverlayTitle').textContent = '🏓 Neon Pong';
+                document.getElementById('gameOverlayTitle').textContent = '&#127955; Neon Pong';
                 document.getElementById('gameControls').textContent = 'Player 1: W/S | Player 2: ↑/↓ | Press SPACE to start';
                 startNeonPong();
             } else if (gameName === 'neonSnake') {
-                document.getElementById('gameOverlayTitle').textContent = '🐍 Neon Snake';
+                document.getElementById('gameOverlayTitle').textContent = '&#128013; Neon Snake';
                 document.getElementById('gameControls').textContent = 'Arrow Keys to move | Eat orbs to grow';
                 startNeonSnake();
             } else if (gameName === 'spaceShooter') {
-                document.getElementById('gameOverlayTitle').textContent = '🚀 Void Defender';
+                document.getElementById('gameOverlayTitle').textContent = '&#128640; Void Defender';
                 document.getElementById('gameControls').textContent = 'Arrow Keys to move | Space to shoot';
                 startSpaceShooter();
             } else if (gameName === 'neonBreaker') {
-                document.getElementById('gameOverlayTitle').textContent = '🧱 Neon Breaker';
+                document.getElementById('gameOverlayTitle').textContent = '&#129521; Neon Breaker';
                 document.getElementById('gameControls').textContent = 'Mouse or Arrow Keys to move paddle';
                 startNeonBreaker();
             }
