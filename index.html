@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Night Cloud | Master Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -18,7 +18,8 @@
             --success: #00ff88;
             --warning: #ffaa00;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; }
         body {
             font-family: 'Rajdhani', sans-serif;
             background: var(--primary);
@@ -26,6 +27,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            -webkit-font-smoothing: antialiased;
         }
         .bg-grid {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -62,6 +64,7 @@
             display: flex; justify-content: space-between; align-items: center;
             background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         .logo {
             font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700;
@@ -138,6 +141,7 @@
             color: var(--text-dim); font-family: 'Orbitron', sans-serif;
             font-size: 0.9rem; font-weight: 500; letter-spacing: 2px;
             cursor: pointer; transition: all 0.3s ease; position: relative;
+            -webkit-appearance: none;
         }
         .auth-tab.active { color: var(--accent); }
         .auth-tab.active::after {
@@ -161,6 +165,7 @@
             border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 10px;
             color: var(--text); font-family: 'Rajdhani', sans-serif;
             font-size: 1rem; letter-spacing: 1px; transition: all 0.3s ease; outline: none;
+            -webkit-appearance: none;
         }
         .form-group input:focus {
             border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
@@ -173,6 +178,8 @@
             font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 700;
             letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
             transition: all 0.3s ease; position: relative; overflow: hidden;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .btn::before {
             content: ''; position: absolute; top: 0; left: -100%;
@@ -217,6 +224,8 @@
             color: var(--text); font-family: 'Rajdhani', sans-serif;
             font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;
             display: flex; align-items: center; justify-content: center; gap: 8px;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .social-btn:hover {
             border-color: var(--accent); background: rgba(0, 240, 255, 0.05);
@@ -273,6 +282,7 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
             z-index: 1000; display: flex; align-items: center; justify-content: center;
+            padding: 20px;
             opacity: 0; visibility: hidden; transition: all 0.3s ease;
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -300,6 +310,8 @@
             color: var(--accent); font-family: 'Orbitron', sans-serif;
             font-size: 0.85rem; letter-spacing: 2px; cursor: pointer;
             transition: all 0.3s ease;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .modal-btn:hover { background: var(--accent); color: var(--primary); }
         .footer {
@@ -355,6 +367,8 @@
             background: transparent; padding: 8px 20px; border-radius: 8px;
             font-family: 'Orbitron', sans-serif; font-size: 0.8rem;
             letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .admin-logout { border: 1px solid var(--error); color: var(--error); }
         .guest-logout { border: 1px solid var(--success); color: var(--success); }
@@ -378,14 +392,14 @@
             transition: all 0.3s ease;
         }
         .service-item:hover { border-color: rgba(0, 240, 255, 0.3); }
-        .service-info { display: flex; align-items: center; gap: 15px; flex: 1; }
-        .service-icon { font-size: 1.5rem; }
-        .service-details { display: flex; flex-direction: column; }
+        .service-info { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0; }
+        .service-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .service-details { display: flex; flex-direction: column; min-width: 0; }
         .service-name { font-weight: 600; color: var(--text); font-size: 0.95rem; }
         .service-desc { font-size: 0.8rem; color: var(--text-dim); }
         .service-status-toggle { display: flex; align-items: center; gap: 10px; }
         .toggle-switch {
-            position: relative; width: 50px; height: 26px;
+            position: relative; width: 50px; height: 26px; flex-shrink: 0;
             background: rgba(255, 170, 0, 0.2); border-radius: 13px;
             cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--warning);
         }
@@ -398,11 +412,13 @@
             border-radius: 50%; transition: all 0.3s ease;
         }
         .toggle-switch.online::after { left: 27px; background: var(--success); }
-        .service-actions { display: flex; gap: 8px; margin-left: 15px; }
+        .service-actions { display: flex; gap: 8px; margin-left: 15px; flex-shrink: 0; }
         .action-btn {
             padding: 6px 12px; border-radius: 6px;
             font-family: 'Rajdhani', sans-serif; font-size: 0.8rem;
             font-weight: 600; cursor: pointer; transition: all 0.3s ease; border: none;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .action-btn.edit {
             background: rgba(0, 240, 255, 0.1); color: var(--accent);
@@ -449,6 +465,8 @@
             font-family: 'Orbitron', sans-serif; font-size: 0.8rem;
             letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
             border: 1px solid var(--accent); color: var(--accent);
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .user-logout:hover { background: var(--accent); color: var(--primary); }
         .user-section {
@@ -461,16 +479,73 @@
             color: var(--accent); margin-bottom: 20px; letter-spacing: 2px;
         }
         @media (max-width: 768px) {
-            .add-service-form { grid-template-columns: 1fr; }
-            .service-item { flex-direction: column; align-items: flex-start; gap: 15px; }
+            html { font-size: 14px; }
+            .navbar { padding: 12px 16px; }
+            .logo { font-size: 1.1rem; letter-spacing: 1px; }
+            .nav-links { gap: 12px; }
+            .nav-link { font-size: 0.8rem; }
+            .admin-badge, .guest-badge { padding: 3px 8px; font-size: 0.6rem; }
+            .main-container { padding: 80px 12px 20px; }
+            .hero { margin-bottom: 30px; }
+            .hero h1 { font-size: 2.2rem; letter-spacing: 2px; }
+            .hero .subtitle { font-size: 0.9rem; letter-spacing: 4px; }
+            .hero .tagline { font-size: 0.85rem; }
+            .auth-container { padding: 24px 16px; border-radius: 16px; }
+            .auth-tabs { margin-bottom: 24px; }
+            .auth-tab { padding: 12px 8px; font-size: 0.8rem; }
+            .form-group { margin-bottom: 18px; }
+            .form-group input { padding: 12px 14px; font-size: 16px; }
+            .btn { padding: 14px; font-size: 0.85rem; letter-spacing: 2px; }
+            .social-login { gap: 10px; }
+            .social-btn { padding: 10px; font-size: 0.8rem; }
+            .divider { margin: 20px 0; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .feature-card { padding: 20px 12px; }
+            .feature-icon { font-size: 2rem; margin-bottom: 10px; }
+            .feature-card h3 { font-size: 0.8rem; }
+            .feature-card p { font-size: 0.75rem; }
+            .feature-card .status { padding: 3px 8px; font-size: 0.6rem; }
+            .dashboard-preview { margin-top: 30px; }
+            .section-title { font-size: 1.1rem; margin-bottom: 20px; }
+            .admin-panel, .guest-panel, .user-panel { margin-top: 20px; }
+            .admin-header, .guest-header, .user-header {
+                flex-direction: column; gap: 12px; align-items: flex-start;
+                margin-bottom: 20px; padding-bottom: 15px;
+            }
+            .admin-title, .guest-title, .user-title { font-size: 1.1rem; }
+            .admin-logout, .guest-logout, .user-logout { align-self: stretch; text-align: center; }
+            .admin-section, .guest-section, .user-section { padding: 20px 16px; margin-bottom: 16px; }
+            .service-item {
+                flex-direction: column; align-items: flex-start; gap: 12px;
+                padding: 12px 14px;
+            }
+            .service-status-toggle { width: 100%; justify-content: space-between; }
             .service-actions { margin-left: 0; width: 100%; justify-content: flex-end; }
-            .hero h1 { font-size: 2.5rem; }
-            .auth-container { padding: 30px 20px; }
-            .navbar { padding: 15px 20px; }
-            .nav-links { gap: 15px; }
+            .add-service-form { grid-template-columns: 1fr; gap: 12px; }
+            .add-service-form .btn { width: 100%; }
+            .modal { padding: 30px 20px; }
+            .modal-icon { font-size: 3rem; }
+            .modal h2 { font-size: 1.2rem; }
+            .footer { margin-top: 40px; padding: 20px; font-size: 0.75rem; }
+            .edit-modal .btn-group { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            html { font-size: 13px; }
+            .hero h1 { font-size: 1.8rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .service-item { padding: 10px 12px; }
+            .service-name { font-size: 0.85rem; }
+            .service-desc { font-size: 0.7rem; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(3, 1fr); }
+            .main-container { padding: 100px 30px 40px; }
+        }
+        @media (min-width: 1400px) {
+            .main-container { max-width: 1200px; margin: 0 auto; }
+            .features-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
-<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -573,12 +648,12 @@
         <!-- ADMIN PANEL -->
         <div class="admin-panel" id="adminPanel">
             <div class="admin-header">
-                <h2 class="admin-title">🔴 ADMIN CONTROL PANEL</h2>
+                <h2 class="admin-title">&#128308; ADMIN CONTROL PANEL</h2>
                 <button class="admin-logout" onclick="adminLogout()">LOGOUT</button>
             </div>
 
             <div class="admin-section">
-                <h3>⚙️ Manage Platform Services</h3>
+                <h3>&#9881;&#65039; Manage Platform Services</h3>
                 <p style="color: var(--text-dim); margin-bottom: 15px; font-size: 0.85rem;">
                     Toggle maintenance mode to block sign-ins on connected platforms.
                 </p>
@@ -586,7 +661,7 @@
             </div>
 
             <div class="admin-section">
-                <h3>➕ Add New Service</h3>
+                <h3>&#10133; Add New Service</h3>
                 <form class="add-service-form" onsubmit="addNewService(event)">
                     <div class="form-group">
                         <label>Service Name</label>
@@ -601,7 +676,7 @@
             </div>
 
             <div class="admin-section">
-                <h3>🔄 System Controls</h3>
+                <h3>&#128260; System Controls</h3>
                 <p style="color: var(--text-dim); margin-bottom: 15px; font-size: 0.85rem;">
                     Reset all services to default state. This will restore deleted services and set all to Online.
                 </p>
@@ -609,14 +684,14 @@
             </div>
 
             <div class="admin-section">
-                <h3>👤 Admin Account</h3>
+                <h3>&#128100; Admin Account</h3>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
                     <div>
                         <div style="font-weight: 600; color: var(--text);">Role: Super Administrator</div>
                         <div style="font-size: 0.85rem; color: var(--text-dim); margin-top: 5px;">Access Level: Full System Control</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 0.8rem; color: var(--success);">● Online</div>
+                        <div style="font-size: 0.8rem; color: var(--success);">&#9679; Online</div>
                         <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;" id="lastLogin">Last login: Just now</div>
                     </div>
                 </div>
@@ -631,19 +706,19 @@
             </div>
 
             <div class="guest-section">
-                <h3>📊 Platform Services Status</h3>
+                <h3>&#128202; Platform Services Status</h3>
                 <div class="service-list" id="guestServiceList"></div>
             </div>
 
             <div class="guest-section">
-                <h3>👤 Guest Account</h3>
+                <h3>&#128100; Guest Account</h3>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
                     <div>
                         <div style="font-weight: 600; color: var(--text);">Role: Guest User</div>
                         <div style="font-size: 0.85rem; color: var(--text-dim); margin-top: 5px;">Access Level: View Only</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 0.8rem; color: var(--success);">● Online</div>
+                        <div style="font-size: 0.8rem; color: var(--success);">&#9679; Online</div>
                         <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">Limited access mode</div>
                     </div>
                 </div>
@@ -658,7 +733,7 @@
             </div>
 
             <div class="user-section">
-                <h3>📊 Platform Services</h3>
+                <h3>&#128202; Platform Services</h3>
                 <p style="color: var(--text-dim); margin-bottom: 15px; font-size: 0.85rem;">
                     Click any service to access it. Services under maintenance are blocked.
                 </p>
@@ -666,14 +741,14 @@
             </div>
 
             <div class="user-section">
-                <h3>👤 Your Account</h3>
+                <h3>&#128100; Your Account</h3>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
                     <div>
                         <div style="font-weight: 600; color: var(--text);" id="userDisplayName">User</div>
                         <div style="font-size: 0.85rem; color: var(--text-dim); margin-top: 5px;" id="userDisplayInfo">Role: Standard User</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 0.8rem; color: var(--success);">● Online</div>
+                        <div style="font-size: 0.8rem; color: var(--success);">&#9679; Online</div>
                         <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">Full platform access</div>
                     </div>
                 </div>
@@ -687,7 +762,7 @@
 
     <div class="modal-overlay" id="maintenanceModal">
         <div class="modal">
-            <div class="modal-icon">🔧</div>
+            <div class="modal-icon">&#128295;</div>
             <h2>Under Maintenance</h2>
             <p id="maintenanceText">This feature is currently undergoing scheduled maintenance.</p>
             <button class="modal-btn" onclick="closeMaintenance()">Understood</button>
@@ -696,7 +771,7 @@
 
     <div class="modal-overlay" id="supportModal">
         <div class="modal">
-            <div class="modal-icon">📧</div>
+            <div class="modal-icon">&#128231;</div>
             <h2 style="color: var(--accent);">Support</h2>
             <p style="font-size: 1.1rem; color: var(--text);">NightIndustriesServers@gmail.com</p>
             <button class="modal-btn" onclick="closeSupportModal()">Close</button>
@@ -727,12 +802,12 @@
 
     <script>
         const DEFAULT_SERVICES = [
-            { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '☁️', status: 'online', url: 'index.html' },
-            { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'online', url: 'night-play.html' },
-            { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '✉️', status: 'online', url: 'night-mail.html' },
-            { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '🤖', status: 'online', url: 'night-ai.html' },
-            { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '🛒', status: 'online', url: 'night-store.html' },
-            { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '🔒', status: 'online', url: 'night-secure.html' }
+            { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '&#9729;&#65039;', status: 'online', url: 'index.html' },
+            { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '&#127918;', status: 'online', url: 'night-play.html' },
+            { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '&#9993;&#65039;', status: 'online', url: 'night-mail.html' },
+            { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '&#129302;', status: 'online', url: 'night-ai.html' },
+            { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '&#128722;', status: 'online', url: 'night-store.html' },
+            { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '&#128274;', status: 'online', url: 'night-secure.html' }
         ];
 
         const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
@@ -1104,7 +1179,7 @@
                     if (service.url) {
                         window.location.href = service.url;
                     } else {
-                        alert('Admin Access: ' + name + ' — Full access granted.');
+                        alert('Admin Access: ' + name + ' &#8212; Full access granted.');
                     }
                     return;
                 }
@@ -1160,7 +1235,7 @@
                     </div>
                     <div class="service-status-toggle">
                         <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'}">${s.status.toUpperCase()}</span>
-                        ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">→ Click to Access</span>' : ''}
+                        ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">&#8594; Click to Access</span>' : ''}
                     </div>
                 </div>
             `).join('');
@@ -1181,7 +1256,7 @@
                     </div>
                     <div class="service-status-toggle">
                         <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'}">${s.status.toUpperCase()}</span>
-                        ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">→ Click to Access</span>' : ''}
+                        ${s.status === 'online' ? '<span style="font-size: 0.75rem; color: var(--accent); margin-left: 10px;">&#8594; Click to Access</span>' : ''}
                     </div>
                 </div>
             `).join('');
@@ -1233,7 +1308,7 @@
             }
 
             const newId = 'night-' + name.toLowerCase().replace(/\s+/g, '-');
-            const icons = ['🚀', '⚡', '💎', '🔥', '⭐', '🌟', '💫', '🎯', '🛡️', '⚙️'];
+            const icons = ['🚀', '&#9889;', '&#128142;', '&#128293;', '&#11088;', '&#127775;', '&#128171;', '&#127919;', '&#128737;&#65039;', '&#9881;&#65039;'];
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
 
             const services = await getServices();
