@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Night Multiplayer | Night Net</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0a0f;
+            --secondary: #12121a;
+            --accent: #00f0ff;
+            --accent-dim: #00f0ff33;
+            --text: #e0e0e5;
+            --text-dim: #6b6b7b;
+            --error: #ff3366;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --card: #1a1a2e;
+            --border: #2d2d44;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 20px 40px;
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700;
+            color: var(--accent); text-shadow: 0 0 20px var(--accent-dim);
+            letter-spacing: 2px; text-decoration: none;
+        }
+        .main-container {
+            position: relative; z-index: 1;
+            padding: 100px 20px 40px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .platform-header {
+            text-align: center; margin-bottom: 40px;
+        }
+        .platform-header h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.5rem;
+            color: var(--text); text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            margin-bottom: 10px;
+        }
+        .platform-header p {
+            color: var(--text-dim); font-size: 1rem; letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; background: var(--secondary);
+            border: 1px solid var(--border); border-radius: 20px;
+            font-size: 0.85rem; margin-bottom: 30px;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--success); box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .status-dot.offline { background: var(--error); box-shadow: 0 0 10px var(--error); animation: none; }
+        .status-dot.warning { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Lobby Styles */
+        .lobby-container {
+            background: var(--secondary); border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 20px; padding: 40px; width: 100%; max-width: 700px;
+            margin: 0 auto 30px; text-align: left;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .lobby-tabs {
+            display: flex; gap: 0; margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        .lobby-tab {
+            flex: 1; padding: 14px; background: none; border: none;
+            color: var(--text-dim); font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem; font-weight: 500; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.3s ease; position: relative;
+            -webkit-appearance: none; touch-action: manipulation;
+        }
+        .lobby-tab.active { color: var(--accent); }
+        .lobby-tab.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
+            height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
+        }
+        .lobby-tab:hover { color: var(--accent); }
+        .lobby-panel { display: none; }
+        .lobby-panel.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; margin-bottom: 8px; color: var(--text-dim);
+            font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 10px;
+            color: var(--text); font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem; letter-spacing: 1px; transition: all 0.3s ease; outline: none;
+            -webkit-appearance: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--accent), #0088aa);
+            border: none; border-radius: 10px; color: var(--primary);
+            font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
+            transition: all 0.3s ease; -webkit-appearance: none; touch-action: manipulation;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #888, #555); margin-top: 10px;
+        }
+        .btn-secondary:hover { box-shadow: 0 10px 30px rgba(136, 136, 136, 0.3); }
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #aa0044);
+        }
+
+        /* Room List */
+        .room-list { display: flex; flex-direction: column; gap: 10px; }
+        .room-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 12px;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .room-item:hover { border-color: var(--accent); background: rgba(0, 240, 255, 0.03); }
+        .room-info { display: flex; align-items: center; gap: 12px; }
+        .room-icon { font-size: 1.5rem; }
+        .room-details { display: flex; flex-direction: column; }
+        .room-name { font-weight: 600; color: var(--text); font-size: 0.95rem; }
+        .room-meta { font-size: 0.8rem; color: var(--text-dim); }
+        .room-status {
+            padding: 4px 12px; border-radius: 20px; font-size: 0.7rem;
+            font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .room-status.open { background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.2); }
+        .room-status.full { background: rgba(255, 51, 102, 0.1); color: var(--error); border: 1px solid rgba(255, 51, 102, 0.2); }
+        .room-status.ingame { background: rgba(255, 170, 0, 0.1); color: var(--warning); border: 1px solid rgba(255, 170, 0, 0.2); }
+
+        /* Game Room */
+        .game-room {
+            display: none; text-align: center;
+        }
+        .game-room.active { display: block; animation: fadeIn 0.4s ease; }
+        .room-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        .room-title { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--accent); }
+        .player-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px; margin-bottom: 25px;
+        }
+        .player-slot {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; text-align: center;
+            transition: all 0.3s ease;
+        }
+        .player-slot.host { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 240, 255, 0.1); }
+        .player-slot.empty {
+            border-style: dashed; opacity: 0.5;
+        }
+        .player-avatar {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #0088aa);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin: 0 auto 10px;
+        }
+        .player-name { font-weight: 600; font-size: 0.9rem; }
+        .player-role { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+        .chat-box {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 15px; height: 180px;
+            overflow-y: auto; text-align: left; margin-bottom: 15px;
+        }
+        .chat-msg { font-size: 0.85rem; margin-bottom: 6px; color: var(--text-dim); }
+        .chat-msg .name { color: var(--accent); font-weight: 600; }
+        .chat-input-row {
+            display: flex; gap: 8px;
+        }
+        .chat-input-row input {
+            flex: 1; padding: 10px 14px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px;
+            color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 0.9rem;
+            outline: none; -webkit-appearance: none;
+        }
+        .chat-input-row input:focus { border-color: var(--accent); }
+        .chat-input-row button {
+            padding: 10px 18px; background: var(--accent); border: none;
+            border-radius: 8px; color: var(--primary); font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem; font-weight: 700; cursor: pointer;
+            -webkit-appearance: none; touch-action: manipulation;
+        }
+
+        /* Maintenance Banner */
+        .maintenance-banner {
+            display: none; background: linear-gradient(135deg, rgba(255, 170, 0, 0.1), rgba(255, 51, 102, 0.1));
+            border: 1px solid var(--warning); border-radius: 15px;
+            padding: 40px; text-align: center; width: 100%; max-width: 500px;
+            margin: 0 auto; animation: fadeIn 0.5s ease;
+        }
+        .maintenance-banner.show { display: block; }
+        .maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+        .maintenance-banner h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
+            color: var(--warning); margin-bottom: 15px;
+        }
+        .maintenance-banner p { color: var(--text-dim); line-height: 1.6; }
+
+        .footer {
+            margin-top: 60px; padding: 30px; text-align: center;
+            color: var(--text-dim); font-size: 0.8rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            html { font-size: 14px; }
+            .navbar { padding: 12px 16px; }
+            .logo { font-size: 1.1rem; }
+            .main-container { padding: 80px 12px 20px; }
+            .platform-header { margin-bottom: 24px; }
+            .platform-header h1 { font-size: 1.8rem; }
+            .platform-header p { font-size: 0.8rem; letter-spacing: 2px; }
+            .lobby-container { padding: 24px 16px; border-radius: 16px; }
+            .lobby-tab { padding: 12px 6px; font-size: 0.75rem; letter-spacing: 1px; }
+            .player-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .player-slot { padding: 14px; }
+            .room-item { padding: 12px; }
+            .room-info { gap: 8px; }
+            .room-icon { font-size: 1.2rem; }
+            .chat-box { height: 140px; padding: 10px; }
+            .footer { margin-top: 40px; padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            html { font-size: 13px; }
+            .platform-header h1 { font-size: 1.5rem; }
+            .player-grid { grid-template-columns: 1fr 1fr; }
+            .lobby-tab { font-size: 0.7rem; }
+        }
+    </style>
+    <base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <nav class="navbar">
+        <a href="index.html" class="logo">NIGHT NET</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="platform-header">
+            <h1>&#128377;&#65039; NIGHT MULTIPLAYER</h1>
+            <p>Real-time Network Gaming</p>
+        </div>
+
+        <div class="status-badge">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Network Online</span>
+        </div>
+
+        <!-- Maintenance Banner -->
+        <div class="maintenance-banner" id="maintenanceBanner">
+            <span class="icon">&#128295;</span>
+            <h2>Service Under Maintenance</h2>
+            <p>Night Multiplayer is currently undergoing scheduled maintenance.<br>Please check back later.</p>
+        </div>
+
+        <!-- Lobby -->
+        <div class="lobby-container" id="lobbyContainer">
+            <div class="lobby-tabs">
+                <button class="lobby-tab active" onclick="switchTab('browse')">Browse Rooms</button>
+                <button class="lobby-tab" onclick="switchTab('create')">Create Room</button>
+            </div>
+
+            <!-- Browse Panel -->
+            <div class="lobby-panel active" id="browsePanel">
+                <div class="room-list" id="roomList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Create Panel -->
+            <div class="lobby-panel" id="createPanel">
+                <div class="form-group">
+                    <label>Room Name</label>
+                    <input type="text" id="roomName" placeholder="e.g. Neon Pong Arena" maxlength="24">
+                </div>
+                <div class="form-group">
+                    <label>Game</label>
+                    <select id="gameSelect">
+                        <option value="neonPong">Neon Pong</option>
+                        <option value="neonSnake">Neon Snake</option>
+                        <option value="spaceShooter">Void Defender</option>
+                        <option value="neonBreaker">Neon Breaker</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Max Players</label>
+                    <select id="maxPlayers">
+                        <option value="2">2 Players</option>
+                        <option value="4">4 Players</option>
+                        <option value="8">8 Players</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="createRoom()">Create Room</button>
+            </div>
+        </div>
+
+        <!-- Game Room -->
+        <div class="game-room" id="gameRoom">
+            <div class="room-header">
+                <span class="room-title" id="gameRoomTitle">Room Name</span>
+                <button class="btn btn-danger" style="width:auto;padding:8px 20px;font-size:0.75rem;" onclick="leaveRoom()">Leave Room</button>
+            </div>
+            <div class="player-grid" id="playerGrid">
+                <!-- Populated by JS -->
+            </div>
+            <div class="chat-box" id="chatBox">
+                <div class="chat-msg"><span class="name">System:</span> Welcome to the lobby. Waiting for players...</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="lobbyChatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendLobbyChat()">
+                <button onclick="sendLobbyChat()">Send</button>
+            </div>
+            <button class="btn" style="margin-top:15px;" id="startGameBtn" onclick="startGame()">Start Game</button>
+        </div>
+
+        <div class="footer">
+            <p>&#169; 2026 Night Net. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        const PLATFORM_ID = 'night-multiplayer';
+        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        let currentRoom = null;
+        let currentPlayer = null;
+        let chatHistory = [];
+
+        // Demo rooms data
+        let demoRooms = [
+            { id: 'room-1', name: 'Neon Pong Pro', game: 'neonPong', players: 1, max: 2, status: 'open', host: 'PlayerOne' },
+            { id: 'room-2', name: 'Snake Pit', game: 'neonSnake', players: 3, max: 4, status: 'open', host: 'SnakeKing' },
+            { id: 'room-3', name: 'Void Wars', game: 'spaceShooter', players: 2, max: 2, status: 'full', host: 'StarLord' },
+            { id: 'room-4', name: 'Brick Bash', game: 'neonBreaker', players: 1, max: 4, status: 'open', host: 'Breaker99' },
+        ];
+
+        async function getServices() {
+            try {
+                const res = await fetch(API_URL + '/services', {
+                    method: 'GET', headers: { 'Content-Type': 'application/json' }
+                });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                localStorage.setItem('night_services', JSON.stringify(data));
+                return data;
+            } catch (err) {
+                return JSON.parse(localStorage.getItem('night_services') || '[]');
+            }
+        }
+
+        function getAuth() {
+            return JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false,"role":null}');
+        }
+
+        async function checkPlatformStatus() {
+            const services = await getServices();
+            const platform = services.find(s => s.id === PLATFORM_ID);
+            const maintenanceBanner = document.getElementById('maintenanceBanner');
+            const lobbyContainer = document.getElementById('lobbyContainer');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            if (platform && platform.status === 'maintenance') {
+                const auth = getAuth();
+                if (!(auth.isLoggedIn && auth.role === 'admin')) {
+                    maintenanceBanner.classList.add('show');
+                    lobbyContainer.style.display = 'none';
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Maintenance Mode';
+                    return;
+                }
+            }
+
+            maintenanceBanner.classList.remove('show');
+            lobbyContainer.style.display = 'block';
+            statusDot.className = 'status-dot';
+            statusText.textContent = 'Network Online';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.lobby-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.lobby-panel').forEach(p => p.classList.remove('active'));
+            if (tab === 'browse') {
+                document.querySelectorAll('.lobby-tab')[0].classList.add('active');
+                document.getElementById('browsePanel').classList.add('active');
+            } else {
+                document.querySelectorAll('.lobby-tab')[1].classList.add('active');
+                document.getElementById('createPanel').classList.add('active');
+            }
+        }
+
+        function renderRooms() {
+            const list = document.getElementById('roomList');
+            const gameNames = { neonPong: 'Neon Pong', neonSnake: 'Neon Snake', spaceShooter: 'Void Defender', neonBreaker: 'Neon Breaker' };
+
+            if (demoRooms.length === 0) {
+                list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:30px;">No rooms available. Create one!</div>';
+                return;
+            }
+
+            list.innerHTML = demoRooms.map(r => {
+                const statusClass = r.status === 'full' ? 'full' : (r.status === 'ingame' ? 'ingame' : 'open');
+                const statusText = r.status === 'full' ? 'Full' : (r.status === 'ingame' ? 'In Game' : 'Open');
+                return `
+                    <div class="room-item" onclick="joinRoom('${r.id}')">
+                        <div class="room-info">
+                            <span class="room-icon">&#127918;</span>
+                            <div class="room-details">
+                                <span class="room-name">${escapeHtml(r.name)}</span>
+                                <span class="room-meta">${gameNames[r.game] || r.game} &#8226; ${r.players}/${r.max} players &#8226; Host: ${escapeHtml(r.host)}</span>
+                            </div>
+                        </div>
+                        <span class="room-status ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function createRoom() {
+            const name = document.getElementById('roomName').value.trim();
+            const game = document.getElementById('gameSelect').value;
+            const max = parseInt(document.getElementById('maxPlayers').value);
+            const auth = getAuth();
+            const hostName = auth.isLoggedIn ? (auth.name || auth.username || 'Player') : 'Guest';
+
+            if (!name) { alert('Please enter a room name'); return; }
+
+            const newRoom = {
+                id: 'room-' + Date.now(),
+                name: name,
+                game: game,
+                players: 1,
+                max: max,
+                status: 'open',
+                host: hostName
+            };
+            demoRooms.unshift(newRoom);
+            renderRooms();
+            switchTab('browse');
+            joinRoom(newRoom.id);
+        }
+
+        function joinRoom(roomId) {
+            const room = demoRooms.find(r => r.id === roomId);
+            if (!room) return;
+            if (room.status === 'full' && room.players >= room.max) {
+                alert('Room is full!');
+                return;
+            }
+
+            currentRoom = room;
+            const auth = getAuth();
+            currentPlayer = {
+                name: auth.isLoggedIn ? (auth.name || auth.username || 'Player') : 'Guest',
+                isHost: room.host === (auth.isLoggedIn ? (auth.name || auth.username || 'Player') : 'Guest')
+            };
+
+            document.getElementById('lobbyContainer').style.display = 'none';
+            document.getElementById('gameRoom').classList.add('active');
+            document.getElementById('gameRoomTitle').textContent = room.name;
+
+            renderPlayerGrid();
+
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = `<div class="chat-msg"><span class="name">System:</span> You joined ${escapeHtml(room.name)}</div>`;
+
+            const startBtn = document.getElementById('startGameBtn');
+            startBtn.style.display = currentPlayer.isHost ? 'block' : 'none';
+        }
+
+        function leaveRoom() {
+            currentRoom = null;
+            currentPlayer = null;
+            document.getElementById('gameRoom').classList.remove('active');
+            document.getElementById('lobbyContainer').style.display = 'block';
+            renderRooms();
+        }
+
+        function renderPlayerGrid() {
+            const grid = document.getElementById('playerGrid');
+            if (!currentRoom) return;
+
+            let slots = [];
+            // Host
+            slots.push(`
+                <div class="player-slot host">
+                    <div class="player-avatar">&#128100;</div>
+                    <div class="player-name">${escapeHtml(currentRoom.host)}</div>
+                    <div class="player-role">Host</div>
+                </div>
+            `);
+            // Empty slots
+            for (let i = 1; i < currentRoom.max; i++) {
+                if (i < currentRoom.players) {
+                    slots.push(`
+                        <div class="player-slot">
+                            <div class="player-avatar">&#128100;</div>
+                            <div class="player-name">Player ${i+1}</div>
+                            <div class="player-role">Member</div>
+                        </div>
+                    `);
+                } else {
+                    slots.push(`
+                        <div class="player-slot empty">
+                            <div class="player-avatar" style="background:var(--border);">?</div>
+                            <div class="player-name" style="color:var(--text-dim);">Empty</div>
+                            <div class="player-role">Waiting...</div>
+                        </div>
+                    `);
+                }
+            }
+            grid.innerHTML = slots.join('');
+        }
+
+        function sendLobbyChat() {
+            const input = document.getElementById('lobbyChatInput');
+            const text = input.value.trim();
+            if (!text || !currentPlayer) return;
+
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg';
+            msg.innerHTML = `<span class="name">${escapeHtml(currentPlayer.name)}:</span> ${escapeHtml(text)}`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = '';
+        }
+
+        function startGame() {
+            if (!currentRoom || !currentPlayer.isHost) return;
+            alert('Starting ' + currentRoom.game + '! (Game integration coming soon)');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Init
+        checkPlatformStatus();
+        renderRooms();
+
+        // Poll for status
+        setInterval(() => {
+            if (document.visibilityState === 'visible') checkPlatformStatus();
+        }, 3000);
+    </script>
+</body>
+</html>
