@@ -734,5 +734,30 @@ setInterval(async () => {
 checkPlatformAccess();
 
 </script>
+<script>
+(function() {
+    function getDeviceName() {
+        const ua = navigator.userAgent;
+        if (/Windows/.test(ua)) return 'Windows PC';
+        if (/Mac/.test(ua)) return 'Mac';
+        if (/Linux/.test(ua)) return 'Linux';
+        if (/Android/.test(ua)) return 'Android';
+        if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+        return 'Unknown Device';
+    }
+    try {
+        fetch('https://night-cloud-api.nightindustriesservers.workers.dev/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                page: location.pathname,
+                userAgent: navigator.userAgent,
+                device: getDeviceName(),
+                username: JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false}').username || 'guest'
+            })
+        });
+    } catch(e) {}
+})();
+</script>
 </body>
 </html>
