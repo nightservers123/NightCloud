@@ -831,18 +831,13 @@
             { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '&#128274;', status: 'online', url: 'night-secure.html' }
         ];
 
-        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
 
         function initServer() {
-            // Force reset if coming from old version
-            const currentVersion = 'night-net-v2';
+            // Force reset if coming from old Night Cloud version
+            const currentVersion = 'night-net-v1';
             const storedVersion = localStorage.getItem('night_version');
-            const cachedServices = localStorage.getItem('night_services');
-            let needsReset = storedVersion !== currentVersion;
-            if (cachedServices && cachedServices.toLowerCase().includes('night cloud')) {
-                needsReset = true;
-            }
-            if (needsReset) {
+            if (storedVersion !== currentVersion) {
                 localStorage.removeItem('night_services');
                 localStorage.setItem('night_version', currentVersion);
             }
@@ -858,19 +853,13 @@
         }
 
         async function getServices() {
-            try {
-                const res = await fetch(API_URL + '/services', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (!res.ok) throw new Error('API error: ' + res.status);
-                const data = await res.json();
-                localStorage.setItem('night_services', JSON.stringify(data));
-                return data;
-            } catch (err) {
-                console.warn('API unreachable, using localStorage fallback:', err.message);
-                return JSON.parse(localStorage.getItem('night_services') || JSON.stringify(DEFAULT_SERVICES));
+            // localStorage is the source of truth. API is only used for backup/restore.
+            const local = localStorage.getItem('night_services');
+            if (local) {
+                return JSON.parse(local);
             }
+            // Fallback to defaults if nothing in localStorage
+            return DEFAULT_SERVICES;
         }
 
         async function saveServices(services) {
@@ -898,48 +887,13 @@
         }
 
         
-        async function forceRefreshFromAPI() {
-            // Clear localStorage cache to force fresh API fetch
-            localStorage.removeItem('night_services');
-            return await getServices();
-        }
         
-
-        function getAuth() {
-            return JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false,"role":null}');
-        }
-
-        function setAuth(auth) {
-            localStorage.setItem('night_auth', JSON.stringify(auth));
-        }
-
-        function showSignInError(msg) {
-            const errDiv = document.getElementById('signinError');
-            errDiv.textContent = msg;
-            errDiv.style.display = 'block';
-            setTimeout(() => { errDiv.style.display = 'none'; }, 4000);
-        }
-
-        function showForgotPassword() {
-            const email = window.prompt('Enter your email address to reset your password:');
-            if (email && email.includes('@')) {
-                window.alert('Password reset link sent to ' + email + '\n\n(Check your inbox for instructions.)');
-            } else if (email) {
-                window.alert('Please enter a valid email address.');
-            }
-        }
-
-        let isAdmin = false;
-        let isGuest = false;
-        let editingServiceId = null;
-
         async function init() {
             initServer();
             createParticles();
             checkExistingSession();
             setupGuestPanelClicks();
-            // Force refresh from API on every load to ensure sync
-            await forceRefreshFromAPI();
+            // Render from localStorage (source of truth)
             await renderPublicServices();
             if (isAdmin) await renderAdminServices();
             if (isGuest) await renderGuestServices();
@@ -1041,8 +995,8 @@
             }
 
             const services = await getServices();
-            const nightNet = services.find(s => s.id === 'night-net');
-            if (nightNet && nightNet.status === 'maintenance') {
+            const nightCloud = services.find(s => s.id === 'night-cloud');
+            if (nightCloud && nightCloud.status === 'maintenance') {
                 showMaintenance('Night Net Sign In');
                 return;
             }
@@ -1088,8 +1042,8 @@
             e.preventDefault();
 
             const services = await getServices();
-            const nightNet = services.find(s => s.id === 'night-net');
-            if (nightNet && nightNet.status === 'maintenance') {
+            const nightCloud = services.find(s => s.id === 'night-cloud');
+            if (nightCloud && nightCloud.status === 'maintenance') {
                 showMaintenance('Night Net Account Creation');
                 return;
             }
@@ -1465,7 +1419,7 @@
 
         setInterval(async () => {
             if (document.visibilityState === 'visible') {
-                // Refresh UI from localStorage (don't force API fetch - prevents deleted items from reappearing)
+                // Refresh UI from localStorage only (source of truth)
                 await renderPublicServices();
                 if (isAdmin) await renderAdminServices();
                 if (isGuest) await renderGuestServices();
