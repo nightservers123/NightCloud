@@ -29,6 +29,9 @@
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .bg-grid {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -55,6 +58,11 @@
             position: relative; z-index: 1;
             padding: 100px 20px 40px;
             width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
         }
         .platform-header {
@@ -82,7 +90,7 @@
             animation: fadeIn 0.5s ease;
             align-self: center;
         }
-        .maintenance-banner.show { display: block !important; }
+        .maintenance-banner.show { display: flex !important; flex-direction: column; align-items: center; width: 100%; }
         .maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; }
         .maintenance-banner h2 {
             font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
@@ -99,7 +107,7 @@
             animation: fadeIn 0.5s ease;
             align-self: center;
         }
-        .auth-container.show { display: block !important; }
+        .auth-container.show { display: flex !important; flex-direction: column; align-items: center; width: 100%; }
         .auth-container h2 {
             font-family: 'Orbitron', sans-serif; font-size: 1.2rem;
             color: var(--accent); margin-bottom: 25px; text-align: center;
@@ -167,7 +175,7 @@
             width: 100%;
             align-self: center;
         }
-        .gaming-dashboard.show { display: block !important; }
+        .gaming-dashboard.show { display: flex !important; flex-direction: column; align-items: center; width: 100%; }
         .dashboard-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; padding-bottom: 20px;
@@ -490,7 +498,7 @@
         let gameLoop = null;
         let canvas, ctx;
 
-        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-net-api.nightindustriesservers.workers.workers.dev';
 
         async function getServices() {
             try {
