@@ -853,7 +853,23 @@
         }
 
         async function getServices() {
-            // localStorage is the source of truth
+            // API is the shared source of truth (syncs across devices)
+            // localStorage is the fallback when API is unreachable
+            try {
+                const res = await fetch(API_URL + '/services', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    // Cache locally for offline fallback
+                    localStorage.setItem('night_services', JSON.stringify(data));
+                    return data;
+                }
+            } catch (err) {
+                console.warn('API unreachable, using localStorage fallback:', err.message);
+            }
+            // Fallback to localStorage
             const local = localStorage.getItem('night_services');
             if (local) {
                 const parsed = JSON.parse(local);
@@ -864,7 +880,6 @@
                 }
                 return parsed;
             }
-            // Fallback to defaults if nothing in localStorage
             return DEFAULT_SERVICES;
         }
 
