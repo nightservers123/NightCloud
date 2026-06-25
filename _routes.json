@@ -3,10 +3,10 @@
   "include": ["/*"],
   "exclude": [
     "/index.html",
+    "/night-ai.html",
+    "/night-play.html",
     "/night-host.html",
     "/night-multiplayer.html",
-    "/night-play.html",
-    "/night-ai.html",
     "/404.html"
   ]
 }
