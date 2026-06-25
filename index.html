@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Night Cloud | Master Control</title>
+    <title>Night Net | Master Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,6 +31,9 @@
             overflow-x: hidden;
             position: relative;
             -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .bg-grid {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -103,6 +109,10 @@
             position: relative; z-index: 1;
             padding: 100px 20px 40px;
             width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
         }
         .hero { text-align: center; margin-bottom: 60px; width: 100%; }
@@ -124,6 +134,7 @@
             position: relative; overflow: hidden;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 240, 255, 0.05);
             margin: 0 auto;
+            text-align: left;
         }
         .auth-container::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -235,6 +246,7 @@
         .dashboard-preview {
             margin-top: 60px; width: 100%; max-width: 900px;
             margin-left: auto; margin-right: auto;
+            text-align: center;
         }
         .section-title {
             font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
@@ -350,7 +362,7 @@
             60% { clip-path: inset(5% 0 80% 0); transform: translate(-2px, 0); }
             80% { clip-path: inset(30% 0 40% 0); transform: translate(2px, 0); }
         }
-        .admin-panel, .guest-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; }
+        .admin-panel, .guest-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; text-align: left; }
         .admin-panel.active, .guest-panel.active { display: block; animation: fadeIn 0.5s ease; }
         .admin-header, .guest-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -380,6 +392,8 @@
         .admin-section, .guest-section {
             background: var(--secondary); border-radius: 15px;
             padding: 30px; margin-bottom: 25px;
+            text-align: left;
+            width: 100%;
         }
         .admin-section { border: 1px solid rgba(255, 51, 102, 0.15); }
         .guest-section { border: 1px solid rgba(0, 255, 136, 0.15); }
@@ -452,7 +466,7 @@
         }
         .platform-link:hover { text-shadow: 0 0 10px var(--accent-glow); }
         /* User Panel Styles */
-        .user-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; }
+        .user-panel { display: none; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; text-align: left; }
         .user-panel.active { display: block; animation: fadeIn 0.5s ease; }
         .user-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -476,6 +490,8 @@
             background: var(--secondary); border-radius: 15px;
             padding: 30px; margin-bottom: 25px;
             border: 1px solid rgba(0, 240, 255, 0.15);
+            text-align: left;
+            width: 100%;
         }
         .user-section h3 {
             font-family: 'Orbitron', sans-serif; font-size: 1rem;
@@ -557,7 +573,7 @@
     <div class="bg-particles" id="particles"></div>
 
     <nav class="navbar">
-        <div class="logo" data-text="NIGHT CLOUD">NIGHT CLOUD</div>
+        <div class="logo" data-text="NIGHT NET">NIGHT NET</div>
         <div class="nav-links">
             <span class="nav-link" onclick="showSupportEmail()">Support</span>
             <span class="admin-badge hidden" id="adminBadge">ADMIN</span>
@@ -570,9 +586,9 @@
         <!-- PUBLIC VIEW -->
         <div id="publicView">
             <div class="hero">
-                <h1 class="glitch" data-text="NIGHT CLOUD">NIGHT CLOUD</h1>
+                <h1 class="glitch" data-text="NIGHT NET">NIGHT NET</h1>
                 <p class="subtitle">Secured by Knight</p>
-                <p class="tagline">Next Generation Cloud Platform</p>
+                <p class="tagline">Next Generation Network Platform</p>
             </div>
 
             <div class="auth-container">
@@ -759,7 +775,7 @@
         </div>
 
         <div class="footer">
-            <p> 2026 Night Cloud. All rights reserved. | <a href="#" onclick="showMaintenance('Privacy Policy')">Privacy</a> | <a href="#" onclick="showMaintenance('Terms')">Terms</a></p>
+            <p> 2026 Night Net. All rights reserved. | <a href="#" onclick="showMaintenance('Privacy Policy')">Privacy</a> | <a href="#" onclick="showMaintenance('Terms')">Terms</a></p>
         </div>
     </div>
 
@@ -805,17 +821,34 @@
 
     <script>
         const DEFAULT_SERVICES = [
-            { id: 'night-cloud', name: 'Night Cloud', desc: 'Secure cloud infrastructure', icon: '&#9729;&#65039;', status: 'online', url: 'index.html' },
+            { id: 'night-net', name: 'Night Net', desc: 'Network infrastructure hub', icon: '&#9729;&#65039;', status: 'online', url: 'index.html' },
             { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '&#127918;', status: 'online', url: 'night-play.html' },
+            { id: 'night-host', name: 'Night Host', desc: 'Free game hosting platform', icon: '&#127918;', status: 'online', url: 'night-host.html' },
             { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '&#9993;&#65039;', status: 'online', url: 'night-mail.html' },
             { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '&#129302;', status: 'online', url: 'night-ai.html' },
+            { id: 'night-multiplayer', name: 'Night Multiplayer', desc: 'Real-time multiplayer services', icon: '&#128377;&#65039;', status: 'online', url: 'night-multiplayer.html' },
             { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '&#128722;', status: 'online', url: 'night-store.html' },
             { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '&#128274;', status: 'online', url: 'night-secure.html' }
         ];
 
-        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
 
         function initServer() {
+            // Force reset if coming from old version or old branding
+            const currentVersion = 'night-net-v2';
+            const storedVersion = localStorage.getItem('night_version');
+            const cachedServices = localStorage.getItem('night_services');
+            let needsReset = storedVersion !== currentVersion;
+
+            // Also reset if cached data still contains old 'Night Cloud' branding
+            if (cachedServices && cachedServices.toLowerCase().includes('night cloud')) {
+                needsReset = true;
+            }
+
+            if (needsReset) {
+                localStorage.removeItem('night_services');
+                localStorage.setItem('night_version', currentVersion);
+            }
             if (!localStorage.getItem('night_services')) {
                 localStorage.setItem('night_services', JSON.stringify(DEFAULT_SERVICES));
             }
@@ -1011,9 +1044,9 @@
             }
 
             const services = await getServices();
-            const nightCloud = services.find(s => s.id === 'night-cloud');
-            if (nightCloud && nightCloud.status === 'maintenance') {
-                showMaintenance('Night Cloud Sign In');
+            const nightNet = services.find(s => s.id === 'night-net');
+            if (nightNet && nightNet.status === 'maintenance') {
+                showMaintenance('Night Net Sign In');
                 return;
             }
 
@@ -1058,9 +1091,9 @@
             e.preventDefault();
 
             const services = await getServices();
-            const nightCloud = services.find(s => s.id === 'night-cloud');
-            if (nightCloud && nightCloud.status === 'maintenance') {
-                showMaintenance('Night Cloud Account Creation');
+            const nightNet = services.find(s => s.id === 'night-net');
+            if (nightNet && nightNet.status === 'maintenance') {
+                showMaintenance('Night Net Account Creation');
                 return;
             }
 
@@ -1110,7 +1143,7 @@
                 localStorage.setItem('night_users', JSON.stringify(users));
             }
 
-            alert('Account created successfully! Welcome to Night Cloud, ' + name + '!');
+            alert('Account created successfully! Welcome to Night Net, ' + name + '!');
             document.getElementById('signupName').value = '';
             document.getElementById('signupUsername').value = '';
             document.getElementById('signupEmail').value = '';
@@ -1409,7 +1442,7 @@
             if (isAdmin) return;
             if (isGuest) return;
             const features = [
-                'Night Cloud Dashboard', 'Night Play Store', 'Night Mail Service',
+                'Night Net Dashboard', 'Night Play Store', 'Night Mail Service',
                 'Night AI Engine', 'Night Store', 'Night Secure Portal',
                 'User Settings', 'API Access', 'Analytics Dashboard', 'Team Management'
             ];
