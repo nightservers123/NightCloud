@@ -270,17 +270,96 @@
             color: #6366f1;
         }
 
+        /* Popup Overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .popup-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .popup-box {
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem 3rem;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .popup-box h2 {
+            font-size: 1.5rem;
+            color: #f1f1f6;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .popup-box p {
+            color: #8b8b9a;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .popup-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .popup-btn:active {
+            transform: translateY(0);
+        }
+
         @media (max-width: 480px) {
             .logo { font-size: 2.5rem; }
             h1 { font-size: 1.5rem; }
             .message { font-size: 1rem; }
+            .popup-box { padding: 2rem 1.5rem; }
+            .popup-box h2 { font-size: 1.25rem; }
         }
     </style>
 <base target="_blank">
 <base target="_blank">
 </head>
 <body>
-    <!-- 3D Starfield - Pluto TV warp zoom effect -->
+    <!-- Popup Overlay with Button -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-box">
+            <h2>Night Net Maintenance</h2>
+            <p>This page features ambient audio. Click below to continue.</p>
+            <button class="popup-btn" onclick="dismissPopup()">Continue</button>
+        </div>
+    </div>
+
     <div class="starfield" id="starfield">
         <div class="vortex-container" id="vortex"></div>
         <div class="glow-orb"></div>
@@ -317,20 +396,20 @@
 
     <script>
         // ============================================
-        // ALL DEEP + LOUD - Dark Cinematic Ambient Music
-        // Sub bass, low drones, dark textures, MAX VOLUME
-        // Zero copyright risk - synthesized in real-time
-        // FIXED: Auto-starts on page load + interaction fallback
-        // FIXED: No popping noise - smooth envelopes
+        // DEEP AMBIENT MUSIC - Web Audio API
+        // Popup with button to dismiss and start audio
         // ============================================
 
         let audioCtx = null;
         let musicPlaying = false;
         let currentChord = 0;
-        let chordChangeInterval = null;
-        let audioStarted = false;
+        let activeOscillators = [];
+        let activeGains = [];
+        let chordTimeout = null;
+        let pulseTimeout = null;
+        let arpeggioTimeout = null;
+        let masterGain = null;
 
-        // ALL DEEP frequencies - sub bass and low mids only
         const chordSets = [
             [27.50, 32.70, 41.20, 55.00, 65.41, 82.41, 110.00, 130.81],
             [32.70, 41.20, 49.00, 65.41, 82.41, 98.00, 130.81, 164.81],
@@ -340,17 +419,12 @@
             [49.00, 61.74, 73.42, 98.00, 123.47, 146.83, 196.00, 246.94]
         ];
 
-        let activeOscillators = [];
-        let activeGains = [];
-        let activeLFOs = [];
-
         function createReverb(ctx) {
             const reverb = ctx.createConvolver();
             const reverbTime = 8.0;
             const sampleRate = ctx.sampleRate;
             const length = sampleRate * reverbTime;
             const impulse = ctx.createBuffer(2, length, sampleRate);
-
             for (let channel = 0; channel < 2; channel++) {
                 const channelData = impulse.getChannelData(channel);
                 for (let i = 0; i < length; i++) {
@@ -362,39 +436,25 @@
             return reverb;
         }
 
-        function createDelay(ctx) {
-            const delay = ctx.createDelay(10.0);
-            delay.delayTime.value = 2.0;
-
-            const delayGain = ctx.createGain();
-            delayGain.gain.value = 0.7;
-
-            return { delay, delayGain };
-        }
-
-        function startAmbientMusic() {
+        function startMusic() {
             if (musicPlaying) return;
 
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-                // Master gain - MAX VOLUME
-                const masterGain = audioCtx.createGain();
+                masterGain = audioCtx.createGain();
                 masterGain.gain.value = 0.95;
 
-                // LOWPASS filter - cuts all high frequencies
                 const lowpass = audioCtx.createBiquadFilter();
                 lowpass.type = 'lowpass';
                 lowpass.frequency.value = 250;
                 lowpass.Q.value = 0.5;
 
-                // Highpass to remove sub-sonic rumble
                 const highpass = audioCtx.createBiquadFilter();
                 highpass.type = 'highpass';
                 highpass.frequency.value = 20;
                 highpass.Q.value = 0.5;
 
-                // HEAVY COMPRESSION
                 const compressor = audioCtx.createDynamicsCompressor();
                 compressor.threshold.value = -8;
                 compressor.knee.value = 2;
@@ -402,7 +462,6 @@
                 compressor.attack.value = 0.01;
                 compressor.release.value = 0.3;
 
-                // LIMITER
                 const limiter = audioCtx.createDynamicsCompressor();
                 limiter.threshold.value = -2;
                 limiter.knee.value = 0;
@@ -414,7 +473,10 @@
                 const reverbGain = audioCtx.createGain();
                 reverbGain.gain.value = 0.8;
 
-                const delayObj = createDelay(audioCtx);
+                const delay = audioCtx.createDelay(10.0);
+                delay.delayTime.value = 2.0;
+                const delayGain = audioCtx.createGain();
+                delayGain.gain.value = 0.7;
 
                 // Chain
                 masterGain.connect(lowpass);
@@ -423,22 +485,19 @@
                 compressor.connect(limiter);
                 limiter.connect(audioCtx.destination);
 
-                // Reverb path
                 masterGain.connect(reverb);
                 reverb.connect(reverbGain);
                 reverbGain.connect(audioCtx.destination);
 
-                // Delay path
-                masterGain.connect(delayObj.delay);
-                delayObj.delay.connect(delayObj.delayGain);
-                delayObj.delayGain.connect(delayObj.delay);
-                delayObj.delayGain.connect(audioCtx.destination);
+                masterGain.connect(delay);
+                delay.connect(delayGain);
+                delayGain.connect(delay);
+                delayGain.connect(audioCtx.destination);
 
                 function playChord(chordIndex, transitionTime) {
                     const now = audioCtx.currentTime;
                     const chord = chordSets[chordIndex];
 
-                    // Fade out old oscillators SMOOTHLY
                     activeGains.forEach(g => {
                         const currentGain = g.gain.value;
                         g.gain.cancelScheduledValues(now);
@@ -452,10 +511,9 @@
                         });
                         activeOscillators = [];
                         activeGains = [];
-                        activeLFOs = [];
                     }, transitionTime * 1000 + 200);
 
-                    chord.forEach((freq, i) => {
+                    chord.forEach((freq) => {
                         const osc = audioCtx.createOscillator();
                         osc.type = 'sine';
                         osc.frequency.value = freq;
@@ -516,19 +574,16 @@
 
                         activeOscillators.push(osc, osc2, osc3, osc4, osc5);
                         activeGains.push(gain);
-                        activeLFOs.push(lfo, pitchLFO, lfoGain, pitchLFOGain);
                     });
                 }
 
                 playChord(0, 4.0);
                 musicPlaying = true;
 
-                let nextChordTime = 30000 + Math.random() * 20000;
-
                 function scheduleNextChord() {
                     if (!musicPlaying) return;
 
-                    chordChangeInterval = setTimeout(() => {
+                    chordTimeout = setTimeout(() => {
                         let nextChord;
                         do {
                             nextChord = Math.floor(Math.random() * chordSets.length);
@@ -537,9 +592,8 @@
                         currentChord = nextChord;
                         playChord(currentChord, 6.0);
 
-                        nextChordTime = 30000 + Math.random() * 20000;
                         scheduleNextChord();
-                    }, nextChordTime);
+                    }, 30000 + Math.random() * 20000);
                 }
 
                 scheduleNextChord();
@@ -571,7 +625,7 @@
                     osc.start(now);
                     osc.stop(now + 4.5);
 
-                    setTimeout(playDeepPulse, 4000 + Math.random() * 8000);
+                    pulseTimeout = setTimeout(playDeepPulse, 4000 + Math.random() * 8000);
                 }
 
                 playDeepPulse();
@@ -633,72 +687,28 @@
                         osc.stop(now + i * 1.5 + 4.5);
                     });
 
-                    setTimeout(playDeepArpeggio, 15000 + Math.random() * 15000);
+                    arpeggioTimeout = setTimeout(playDeepArpeggio, 15000 + Math.random() * 15000);
                 }
 
                 playDeepArpeggio();
 
             } catch (e) {
-                console.log('Audio not supported:', e);
+                console.log('Audio error:', e);
             }
         }
 
-        // ============================================
-        // FIXED: Robust audio start handling
-        // ============================================
+        function dismissPopup() {
+            const overlay = document.getElementById('popupOverlay');
+            overlay.classList.add('hidden');
 
-        function initAudio() {
-            if (audioStarted) return;
-            audioStarted = true;
-
-            // If audio context exists but is suspended, resume it
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => {
-                    console.log('Audio context resumed');
-                }).catch(e => {
-                    console.log('Could not resume audio context:', e);
-                    // Try creating new context
-                    startAmbientMusic();
-                });
-            } else {
-                startAmbientMusic();
-            }
-        }
-
-        // Try to start immediately on load
-        window.addEventListener('load', () => {
+            // Start audio after popup is dismissed
             setTimeout(() => {
-                startAmbientMusic();
-            }, 100);
-        });
-
-        // Also try on DOM ready
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            setTimeout(startAmbientMusic, 100);
-        } else {
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(startAmbientMusic, 100);
-            });
+                startMusic();
+            }, 300);
         }
 
-        // Fallback: start on any user interaction
-        const startEvents = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'];
-        startEvents.forEach(event => {
-            document.addEventListener(event, function handler() {
-                initAudio();
-                document.removeEventListener(event, handler);
-            }, { once: true, passive: true });
-        });
-
-        // Also handle visibility change (user comes back to tab)
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        });
-
         // ============================================
-        // 3D STARFIELD - Pluto TV style
+        // 3D STARFIELD
         // ============================================
         const vortex = document.getElementById('vortex');
         const starCount = 150;
