@@ -676,7 +676,7 @@ async function handleAuthSignIn() {
   const errorDiv = document.getElementById('authError');
 
   // Admin bypass
-  if (input.toLowerCase() === 'night' && password === 'Knight@123') {
+if (username === 'night' && password === 'Knighttime@123') {
     setAuth({ isLoggedIn: true, role: 'admin', username: 'night' });
     document.getElementById('maintenanceBanner').classList.remove('show');
     document.getElementById('authOverlay').classList.add('hidden');
