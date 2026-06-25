@@ -1,3 +1,6 @@
+name = "night-net-api"
+main = "src/index.js"
+
 [assets]
-directory = "./public"  # or wherever your HTML files are
-not_found_handling = "404-page"  # <-- CHANGE THIS from "single-page-application"
+directory = "./public"
+not_found_handling = "404-page"
