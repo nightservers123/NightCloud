@@ -320,12 +320,15 @@
         // ALL DEEP + LOUD - Dark Cinematic Ambient Music
         // Sub bass, low drones, dark textures, MAX VOLUME
         // Zero copyright risk - synthesized in real-time
+        // NO OVERLAY - auto starts on any interaction
+        // NO POPPING - proper gain scheduling, no exponential to zero
         // ============================================
 
         let audioCtx = null;
         let musicPlaying = false;
         let currentChord = 0;
         let chordChangeInterval = null;
+        let audioStarted = false;
 
         // ALL DEEP frequencies - sub bass and low mids only
         const chordSets = [
@@ -443,17 +446,22 @@
 
                 // ============================================
                 // DEEP DRONE PAD - ALL LOW FREQUENCIES, MAX GAIN
+                // NO POPPING - smooth envelopes, no exponential to zero
                 // ============================================
                 function playChord(chordIndex, transitionTime) {
                     const now = audioCtx.currentTime;
                     const chord = chordSets[chordIndex];
 
-                    // Fade out old oscillators
+                    // Fade out old oscillators SMOOTHLY - no abrupt cutoff
                     activeGains.forEach(g => {
-                        g.gain.setTargetAtTime(0, now, transitionTime);
+                        // Use linearRamp for smooth fade instead of setTargetAtTime which can cause clicks
+                        const currentGain = g.gain.value;
+                        g.gain.cancelScheduledValues(now);
+                        g.gain.setValueAtTime(currentGain, now);
+                        g.gain.linearRampToValueAtTime(0.0001, now + transitionTime);
                     });
 
-                    // Schedule cleanup of old oscillators
+                    // Schedule cleanup of old oscillators AFTER fade completes
                     setTimeout(() => {
                         activeOscillators.forEach(o => {
                             try { o.stop(); } catch(e) {}
@@ -461,7 +469,7 @@
                         activeOscillators = [];
                         activeGains = [];
                         activeLFOs = [];
-                    }, transitionTime * 1000 + 500);
+                    }, transitionTime * 1000 + 200);
 
                     // Create new oscillators - ALL SINE for pure bass, MAX GAIN
                     chord.forEach((freq, i) => {
@@ -495,10 +503,10 @@
                         osc5.frequency.value = freq * 0.125;
                         osc5.detune.value = (Math.random() - 0.5) * 1;
 
-                        // Gain - MAX VOLUME per note
+                        // Gain - MAX VOLUME per note, SMOOTH FADE IN
                         const gain = audioCtx.createGain();
-                        gain.gain.setValueAtTime(0, now);
-                        gain.gain.linearRampToValueAtTime(0.25 / chord.length, now + transitionTime * 2.5); // LOUD
+                        gain.gain.setValueAtTime(0.0001, now); // Start from near silence
+                        gain.gain.linearRampToValueAtTime(0.25 / chord.length, now + transitionTime * 2.5); // SMOOTH fade in
 
                         // VERY SLOW LFO for volume (breathing)
                         const lfo = audioCtx.createOscillator();
@@ -507,7 +515,7 @@
                         lfoGain.gain.value = 0.15 / chord.length; // LOUD modulation
                         lfo.connect(lfoGain);
                         lfoGain.connect(gain.gain);
-                        lfo.start();
+                        lfo.start(now);
 
                         // Pitch drift LFO - very slow
                         const pitchLFO = audioCtx.createOscillator();
@@ -516,7 +524,7 @@
                         pitchLFOGain.gain.value = 2;
                         pitchLFO.connect(pitchLFOGain);
                         pitchLFOGain.connect(osc.frequency);
-                        pitchLFO.start();
+                        pitchLFO.start(now);
 
                         // Connect ALL
                         osc.connect(gain);
@@ -526,11 +534,12 @@
                         osc5.connect(gain);
                         gain.connect(masterGain);
 
-                        osc.start();
-                        osc2.start();
-                        osc3.start();
-                        osc4.start();
-                        osc5.start();
+                        // Start oscillators at current time to avoid popping
+                        osc.start(now);
+                        osc2.start(now);
+                        osc3.start(now);
+                        osc4.start(now);
+                        osc5.start(now);
 
                         activeOscillators.push(osc, osc2, osc3, osc4, osc5);
                         activeGains.push(gain);
@@ -538,7 +547,7 @@
                     });
                 }
 
-                // Start first chord
+                // Start first chord with SMOOTH fade in
                 playChord(0, 4.0);
                 musicPlaying = true;
 
@@ -570,6 +579,7 @@
 
                 // ============================================
                 // DEEP BASS PULSES - LOUD, slow, powerful thrum
+                // NO POPPING - smooth attack and release
                 // ============================================
                 function playDeepPulse() {
                     if (!musicPlaying) return;
@@ -581,11 +591,11 @@
                     osc.type = 'sine';
                     osc.frequency.value = baseFreq;
 
-                    // LOUD bass pulse
+                    // LOUD bass pulse with SMOOTH envelope
                     const gain = audioCtx.createGain();
-                    gain.gain.setValueAtTime(0, now);
-                    gain.gain.linearRampToValueAtTime(0.2, now + 0.2); // LOUD
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 4.0);
+                    gain.gain.setValueAtTime(0.0001, now); // Start from silence
+                    gain.gain.linearRampToValueAtTime(0.2, now + 0.5); // SMOOTH attack
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.0); // SMOOTH release
 
                     // Lowpass filter
                     const filter = audioCtx.createBiquadFilter();
@@ -608,6 +618,7 @@
 
                 // ============================================
                 // SUB RUMBLE - constant very low noise texture, LOUD
+                // NO POPPING - starts at zero and fades in
                 // ============================================
                 const bufferSize = audioCtx.sampleRate * 4;
                 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -626,7 +637,8 @@
                 noiseFilter.Q.value = 0.2;
 
                 const noiseGain = audioCtx.createGain();
-                noiseGain.gain.value = 0.12; // LOUD
+                noiseGain.gain.setValueAtTime(0.0001, audioCtx.currentTime); // Start silent
+                noiseGain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 3.0); // SMOOTH fade in
 
                 // LFO for filter sweep
                 const filterLFO = audioCtx.createOscillator();
@@ -635,15 +647,16 @@
                 filterLFOGain.gain.value = 25;
                 filterLFO.connect(filterLFOGain);
                 filterLFOGain.connect(noiseFilter.frequency);
-                filterLFO.start();
+                filterLFO.start(audioCtx.currentTime);
 
                 noise.connect(noiseFilter);
                 noiseFilter.connect(noiseGain);
                 noiseGain.connect(masterGain);
-                noise.start();
+                noise.start(audioCtx.currentTime);
 
                 // ============================================
                 // DEEP ARPEGGIO - very slow, low notes, LOUD
+                // NO POPPING - smooth attack and release
                 // ============================================
                 function playDeepArpeggio() {
                     if (!musicPlaying) return;
@@ -658,9 +671,9 @@
                         osc.frequency.value = baseFreq * mult;
 
                         const gain = audioCtx.createGain();
-                        gain.gain.setValueAtTime(0, now + i * 1.5); // SLOW timing
-                        gain.gain.linearRampToValueAtTime(0.06, now + i * 1.5 + 0.2); // LOUD
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 1.5 + 4);
+                        gain.gain.setValueAtTime(0.0001, now + i * 1.5); // Start silent
+                        gain.gain.linearRampToValueAtTime(0.06, now + i * 1.5 + 0.5); // SMOOTH attack
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 1.5 + 4); // SMOOTH release
 
                         osc.connect(gain);
                         gain.connect(masterGain);
@@ -680,14 +693,28 @@
             }
         }
 
-        // Try to start on load
-        window.addEventListener('load', () => {
-            setTimeout(startAmbientMusic, 500);
-        });
+        // ============================================
+        // NO OVERLAY - auto starts on any interaction
+        // Browsers block auto-play audio until user clicks/taps
+        // ============================================
+        function tryStartAudio() {
+            if (audioStarted) return;
+            audioStarted = true;
+            startAmbientMusic();
+        }
 
-        // Also start on first interaction (browsers block audio until interaction)
-        document.addEventListener('click', startAmbientMusic, { once: true });
-        document.addEventListener('touchstart', startAmbientMusic, { once: true });
+        // Start on any user interaction
+        document.addEventListener('click', tryStartAudio, { once: true });
+        document.addEventListener('touchstart', tryStartAudio, { once: true });
+        document.addEventListener('keydown', tryStartAudio, { once: true });
+        document.addEventListener('mousemove', tryStartAudio, { once: true });
+
+        // Try auto-start on load (will likely fail due to browser policy)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                startAmbientMusic();
+            }, 500);
+        });
 
         // ============================================
         // 3D STARFIELD - Pluto TV style
