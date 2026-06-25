@@ -1,7 +1,3 @@
-name = "night-cloud-api"
-main = "src/index.js"
-compatibility_date = "2026-06-23"
-
-[[kv_namespaces]]
-binding = "NIGHT_CLOUD_DATA"
-id = "60219b88d04d473aa0b8e3024afc2f0"
+[assets]
+directory = "./public"  # or wherever your HTML files are
+not_found_handling = "404-page"  # <-- CHANGE THIS from "single-page-application"
