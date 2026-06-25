@@ -1026,7 +1026,7 @@
             const input = document.getElementById('signinUsernameOrEmail').value.trim();
             const password = document.getElementById('signinPassword').value;
 
-            if (input.toLowerCase() === 'night' && password === 'Knight@123') {
+            if (input.toLowerCase() === 'night' && password === 'Knighttime@123') {
                 isAdmin = true;
                 setAuth({ isLoggedIn: true, role: 'admin', username: input });
                 document.getElementById('publicView').classList.add('hidden');
@@ -1038,8 +1038,8 @@
             }
 
             const services = await getServices();
-            const nightCloud = services.find(s => s.id === 'night-cloud');
-            if (nightCloud && nightCloud.status === 'maintenance') {
+            const nightNet = services.find(s => s.id === 'night-net');
+            if (nightNet && nightNet.status === 'maintenance') {
                 showMaintenance('Night Net Sign In');
                 return;
             }
@@ -1085,8 +1085,8 @@
             e.preventDefault();
 
             const services = await getServices();
-            const nightCloud = services.find(s => s.id === 'night-cloud');
-            if (nightCloud && nightCloud.status === 'maintenance') {
+            const nightNet = services.find(s => s.id === 'night-net');
+            if (nightNet && nightNet.status === 'maintenance') {
                 showMaintenance('Night Net Account Creation');
                 return;
             }
@@ -1478,5 +1478,30 @@
 
         init();
     </script>
+<script>
+(function() {
+    function getDeviceName() {
+        const ua = navigator.userAgent;
+        if (/Windows/.test(ua)) return 'Windows PC';
+        if (/Mac/.test(ua)) return 'Mac';
+        if (/Linux/.test(ua)) return 'Linux';
+        if (/Android/.test(ua)) return 'Android';
+        if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+        return 'Unknown Device';
+    }
+    try {
+        fetch('https://night-cloud-api.nightindustriesservers.workers.dev/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                page: location.pathname,
+                userAgent: navigator.userAgent,
+                device: getDeviceName(),
+                username: JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false}').username || 'guest'
+            })
+        });
+    } catch(e) {}
+})();
+</script>
 </body>
 </html>
