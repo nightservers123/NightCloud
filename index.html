@@ -363,7 +363,7 @@
             80% { clip-path: inset(30% 0 40% 0); transform: translate(2px, 0); }
         }
         .admin-panel, .guest-panel { display: none !important; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; text-align: left; }
-        .admin-panel.active, .guest-panel.active { display: block; animation: fadeIn 0.5s ease; }
+        .admin-panel.active, .guest-panel.active { display: block !important; animation: fadeIn 0.5s ease; }
         .admin-header, .guest-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; padding-bottom: 20px;
@@ -459,7 +459,8 @@
         .edit-modal .form-group { margin-bottom: 20px; }
         .edit-modal .btn-group { display: flex; gap: 10px; margin-top: 25px; }
         .edit-modal .btn-group .btn { flex: 1; }
-        .hidden { display: none !important; }
+        .hidden { display: none !important;
+        #publicView.hidden { display: none !important; } }
         .platform-link {
             color: var(--accent); text-decoration: none; font-weight: 600;
             transition: all 0.3s ease;
@@ -467,7 +468,7 @@
         .platform-link:hover { text-shadow: 0 0 10px var(--accent-glow); }
         /* User Panel Styles */
         .user-panel { display: none !important; width: 100%; max-width: 900px; margin-top: 40px; margin-left: auto; margin-right: auto; text-align: left; }
-        .user-panel.active { display: block; animation: fadeIn 0.5s ease; }
+        .user-panel.active { display: block !important; animation: fadeIn 0.5s ease; }
         .user-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; padding-bottom: 20px;
@@ -994,11 +995,13 @@
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('guestPanel').classList.add('active');
                 document.getElementById('guestBadge').classList.remove('hidden');
+                renderGuestServices();
             } else if (auth.isLoggedIn && auth.role === 'user') {
                 document.getElementById('publicView').classList.add('hidden');
                 document.getElementById('userPanel').classList.add('active');
                 document.getElementById('userDisplayName').textContent = auth.name || auth.username;
                 document.getElementById('userDisplayInfo').textContent = 'Username: ' + auth.username + ' | Role: Standard User';
+                renderUserServices();
             }
         }
 
@@ -1023,8 +1026,12 @@
 
             if (input.toLowerCase() === 'night' && password === 'Knight@123') {
                 isAdmin = true;
+                isGuest = false;
                 setAuth({ isLoggedIn: true, role: 'admin', username: input });
                 document.getElementById('publicView').classList.add('hidden');
+                document.getElementById('guestPanel').classList.remove('active');
+                document.getElementById('guestBadge').classList.add('hidden');
+                document.getElementById('userPanel').classList.remove('active');
                 document.getElementById('adminPanel').classList.add('active');
                 document.getElementById('adminBadge').classList.remove('hidden');
                 document.getElementById('lastLogin').textContent = 'Last login: ' + new Date().toLocaleString();
@@ -1063,8 +1070,14 @@
             }
 
             if (user) {
+                isAdmin = false;
+                isGuest = false;
                 setAuth({ isLoggedIn: true, role: 'user', username: user.username, name: user.name });
                 document.getElementById('publicView').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('active');
+                document.getElementById('adminBadge').classList.add('hidden');
+                document.getElementById('guestPanel').classList.remove('active');
+                document.getElementById('guestBadge').classList.add('hidden');
                 document.getElementById('userPanel').classList.add('active');
                 document.getElementById('userDisplayName').textContent = user.name;
                 document.getElementById('userDisplayInfo').textContent = 'Username: ' + user.username + ' | Role: Standard User';
@@ -1153,8 +1166,27 @@
 
         function guestLogout() {
             isGuest = false;
+            isAdmin = false;
             setAuth({ isLoggedIn: false, role: null });
             document.getElementById('publicView').classList.remove('hidden');
+            document.getElementById('guestPanel').classList.remove('active');
+            document.getElementById('guestBadge').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('active');
+            document.getElementById('adminBadge').classList.add('hidden');
+            document.getElementById('userPanel').classList.remove('active');
+            document.getElementById('signinUsernameOrEmail').value = '';
+            document.getElementById('signinPassword').value = '';
+            switchTab('signin');
+        }
+
+        function userLogout() {
+            isAdmin = false;
+            isGuest = false;
+            setAuth({ isLoggedIn: false, role: null });
+            document.getElementById('publicView').classList.remove('hidden');
+            document.getElementById('userPanel').classList.remove('active');
+            document.getElementById('adminPanel').classList.remove('active');
+            document.getElementById('adminBadge').classList.add('hidden');
             document.getElementById('guestPanel').classList.remove('active');
             document.getElementById('guestBadge').classList.add('hidden');
             document.getElementById('signinUsernameOrEmail').value = '';
@@ -1162,21 +1194,16 @@
             switchTab('signin');
         }
 
-        function userLogout() {
-            setAuth({ isLoggedIn: false, role: null });
-            document.getElementById('publicView').classList.remove('hidden');
-            document.getElementById('userPanel').classList.remove('active');
-            document.getElementById('signinUsernameOrEmail').value = '';
-            document.getElementById('signinPassword').value = '';
-            switchTab('signin');
-        }
-
         function adminLogout() {
             isAdmin = false;
+            isGuest = false;
             setAuth({ isLoggedIn: false, role: null });
             document.getElementById('publicView').classList.remove('hidden');
             document.getElementById('adminPanel').classList.remove('active');
             document.getElementById('adminBadge').classList.add('hidden');
+            document.getElementById('guestPanel').classList.remove('active');
+            document.getElementById('guestBadge').classList.add('hidden');
+            document.getElementById('userPanel').classList.remove('active');
             document.getElementById('signinUsernameOrEmail').value = '';
             document.getElementById('signinPassword').value = '';
             switchTab('signin');
