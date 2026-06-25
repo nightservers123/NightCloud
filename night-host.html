@@ -101,7 +101,7 @@
 
         /* Panels */
         .panel { display: none; width: 100%; max-width: 900px; }
-        .panel.active { display: flex !important; flex-direction: column; align-items: center; width: 100%; animation: fadeIn 0.4s ease; }
+        .panel.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Upload Form */
@@ -261,7 +261,7 @@
             padding: 40px; text-align: center; width: 100%; max-width: 500px;
             margin: 0 auto 30px; animation: fadeIn 0.5s ease;
         }
-        .maintenance-banner.show { display: flex !important; flex-direction: column; align-items: center; width: 100%; }
+        .maintenance-banner.show { display: block; }
         .maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; display: block; }
         .maintenance-banner h2 {
             font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
@@ -419,7 +419,7 @@
 
     <script>
         const PLATFORM_ID = 'night-host';
-        const API_URL = 'https://night-net-api.nightindustriesservers.workers.workers.dev';
+        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
         let uploadedFiles = [];
         let demoGames = [
             { id: 'demo-1', title: 'Neon Pong', desc: 'Classic Pong with cyberpunk aesthetics', author: 'Night Net', type: 'html5', thumb: '&#127955;', data: null, url: 'night-play.html' },
