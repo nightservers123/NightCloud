@@ -320,8 +320,8 @@
         // ALL DEEP + LOUD - Dark Cinematic Ambient Music
         // Sub bass, low drones, dark textures, MAX VOLUME
         // Zero copyright risk - synthesized in real-time
-        // NO OVERLAY - auto starts on any interaction
-        // NO POPPING - proper gain scheduling, no exponential to zero
+        // FIXED: Auto-starts on page load + interaction fallback
+        // FIXED: No popping noise - smooth envelopes
         // ============================================
 
         let audioCtx = null;
@@ -332,17 +332,11 @@
 
         // ALL DEEP frequencies - sub bass and low mids only
         const chordSets = [
-            // Set 1: A1 dark - sub bass
             [27.50, 32.70, 41.20, 55.00, 65.41, 82.41, 110.00, 130.81],
-            // Set 2: C1 deep - sub bass
             [32.70, 41.20, 49.00, 65.41, 82.41, 98.00, 130.81, 164.81],
-            // Set 3: E1 dark - sub bass
             [41.20, 49.00, 61.74, 82.41, 98.00, 123.47, 164.81, 196.00],
-            // Set 4: F1 deep - sub bass
             [43.65, 55.00, 65.41, 87.31, 110.00, 130.81, 174.61, 220.00],
-            // Set 5: D1 dark - sub bass
             [36.71, 43.65, 55.00, 73.42, 87.31, 110.00, 146.83, 174.61],
-            // Set 6: G1 deep - sub bass
             [49.00, 61.74, 73.42, 98.00, 123.47, 146.83, 196.00, 246.94]
         ];
 
@@ -352,7 +346,7 @@
 
         function createReverb(ctx) {
             const reverb = ctx.createConvolver();
-            const reverbTime = 8.0; // VERY LONG reverb for deep space
+            const reverbTime = 8.0;
             const sampleRate = ctx.sampleRate;
             const length = sampleRate * reverbTime;
             const impulse = ctx.createBuffer(2, length, sampleRate);
@@ -370,10 +364,10 @@
 
         function createDelay(ctx) {
             const delay = ctx.createDelay(10.0);
-            delay.delayTime.value = 2.0; // SLOW delay
+            delay.delayTime.value = 2.0;
 
             const delayGain = ctx.createGain();
-            delayGain.gain.value = 0.7; // MORE delay
+            delayGain.gain.value = 0.7;
 
             return { delay, delayGain };
         }
@@ -384,35 +378,31 @@
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-                // ============================================
-                // MASTER CHAIN - MAX VOLUME, HEAVY COMPRESSION
-                // ============================================
-
                 // Master gain - MAX VOLUME
                 const masterGain = audioCtx.createGain();
-                masterGain.gain.value = 0.95; // NEARLY MAX VOLUME
+                masterGain.gain.value = 0.95;
 
-                // LOWPASS filter - cuts all high frequencies, keeps only deep bass
+                // LOWPASS filter - cuts all high frequencies
                 const lowpass = audioCtx.createBiquadFilter();
                 lowpass.type = 'lowpass';
-                lowpass.frequency.value = 250; // Cuts everything above 250Hz
+                lowpass.frequency.value = 250;
                 lowpass.Q.value = 0.5;
 
-                // Highpass to remove sub-sonic rumble but keep deep bass
+                // Highpass to remove sub-sonic rumble
                 const highpass = audioCtx.createBiquadFilter();
                 highpass.type = 'highpass';
-                highpass.frequency.value = 20; // Keep 20Hz+
+                highpass.frequency.value = 20;
                 highpass.Q.value = 0.5;
 
-                // HEAVY COMPRESSION - squash everything up loud
+                // HEAVY COMPRESSION
                 const compressor = audioCtx.createDynamicsCompressor();
                 compressor.threshold.value = -8;
                 compressor.knee.value = 2;
-                compressor.ratio.value = 12; // HEAVY compression
+                compressor.ratio.value = 12;
                 compressor.attack.value = 0.01;
                 compressor.release.value = 0.3;
 
-                // LIMITER - prevent clipping but keep loud
+                // LIMITER
                 const limiter = audioCtx.createDynamicsCompressor();
                 limiter.threshold.value = -2;
                 limiter.knee.value = 0;
@@ -422,11 +412,11 @@
 
                 const reverb = createReverb(audioCtx);
                 const reverbGain = audioCtx.createGain();
-                reverbGain.gain.value = 0.8; // MORE reverb
+                reverbGain.gain.value = 0.8;
 
                 const delayObj = createDelay(audioCtx);
 
-                // Chain: master -> lowpass -> highpass -> compressor -> limiter -> destination
+                // Chain
                 masterGain.connect(lowpass);
                 lowpass.connect(highpass);
                 highpass.connect(compressor);
@@ -441,27 +431,21 @@
                 // Delay path
                 masterGain.connect(delayObj.delay);
                 delayObj.delay.connect(delayObj.delayGain);
-                delayObj.delayGain.connect(delayObj.delay); // feedback loop
+                delayObj.delayGain.connect(delayObj.delay);
                 delayObj.delayGain.connect(audioCtx.destination);
 
-                // ============================================
-                // DEEP DRONE PAD - ALL LOW FREQUENCIES, MAX GAIN
-                // NO POPPING - smooth envelopes, no exponential to zero
-                // ============================================
                 function playChord(chordIndex, transitionTime) {
                     const now = audioCtx.currentTime;
                     const chord = chordSets[chordIndex];
 
-                    // Fade out old oscillators SMOOTHLY - no abrupt cutoff
+                    // Fade out old oscillators SMOOTHLY
                     activeGains.forEach(g => {
-                        // Use linearRamp for smooth fade instead of setTargetAtTime which can cause clicks
                         const currentGain = g.gain.value;
                         g.gain.cancelScheduledValues(now);
                         g.gain.setValueAtTime(currentGain, now);
                         g.gain.linearRampToValueAtTime(0.0001, now + transitionTime);
                     });
 
-                    // Schedule cleanup of old oscillators AFTER fade completes
                     setTimeout(() => {
                         activeOscillators.forEach(o => {
                             try { o.stop(); } catch(e) {}
@@ -471,62 +455,52 @@
                         activeLFOs = [];
                     }, transitionTime * 1000 + 200);
 
-                    // Create new oscillators - ALL SINE for pure bass, MAX GAIN
                     chord.forEach((freq, i) => {
-                        // Main oscillator - SINE for pure deep tone
                         const osc = audioCtx.createOscillator();
                         osc.type = 'sine';
                         osc.frequency.value = freq;
                         osc.detune.value = (Math.random() - 0.5) * 5;
 
-                        // Second oscillator - slight detune for thickness
                         const osc2 = audioCtx.createOscillator();
                         osc2.type = 'sine';
                         osc2.frequency.value = freq * 1.002;
                         osc2.detune.value = (Math.random() - 0.5) * 8;
 
-                        // Third oscillator - sub octave for MASSIVE bass
                         const osc3 = audioCtx.createOscillator();
                         osc3.type = 'sine';
                         osc3.frequency.value = freq * 0.5;
                         osc3.detune.value = (Math.random() - 0.5) * 3;
 
-                        // Fourth oscillator - 2 octaves below for sub rumble
                         const osc4 = audioCtx.createOscillator();
                         osc4.type = 'sine';
                         osc4.frequency.value = freq * 0.25;
                         osc4.detune.value = (Math.random() - 0.5) * 2;
 
-                        // Fifth oscillator - 3 octaves below for EXTREME sub
                         const osc5 = audioCtx.createOscillator();
                         osc5.type = 'sine';
                         osc5.frequency.value = freq * 0.125;
                         osc5.detune.value = (Math.random() - 0.5) * 1;
 
-                        // Gain - MAX VOLUME per note, SMOOTH FADE IN
                         const gain = audioCtx.createGain();
-                        gain.gain.setValueAtTime(0.0001, now); // Start from near silence
-                        gain.gain.linearRampToValueAtTime(0.25 / chord.length, now + transitionTime * 2.5); // SMOOTH fade in
+                        gain.gain.setValueAtTime(0.0001, now);
+                        gain.gain.linearRampToValueAtTime(0.25 / chord.length, now + transitionTime * 2.5);
 
-                        // VERY SLOW LFO for volume (breathing)
                         const lfo = audioCtx.createOscillator();
-                        lfo.frequency.value = 0.02 + Math.random() * 0.05; // VERY slow
+                        lfo.frequency.value = 0.02 + Math.random() * 0.05;
                         const lfoGain = audioCtx.createGain();
-                        lfoGain.gain.value = 0.15 / chord.length; // LOUD modulation
+                        lfoGain.gain.value = 0.15 / chord.length;
                         lfo.connect(lfoGain);
                         lfoGain.connect(gain.gain);
                         lfo.start(now);
 
-                        // Pitch drift LFO - very slow
                         const pitchLFO = audioCtx.createOscillator();
-                        pitchLFO.frequency.value = 0.01 + Math.random() * 0.02; // VERY slow
+                        pitchLFO.frequency.value = 0.01 + Math.random() * 0.02;
                         const pitchLFOGain = audioCtx.createGain();
                         pitchLFOGain.gain.value = 2;
                         pitchLFO.connect(pitchLFOGain);
                         pitchLFOGain.connect(osc.frequency);
                         pitchLFO.start(now);
 
-                        // Connect ALL
                         osc.connect(gain);
                         osc2.connect(gain);
                         osc3.connect(gain);
@@ -534,7 +508,6 @@
                         osc5.connect(gain);
                         gain.connect(masterGain);
 
-                        // Start oscillators at current time to avoid popping
                         osc.start(now);
                         osc2.start(now);
                         osc3.start(now);
@@ -547,29 +520,23 @@
                     });
                 }
 
-                // Start first chord with SMOOTH fade in
                 playChord(0, 4.0);
                 musicPlaying = true;
 
-                // ============================================
-                // CHORD PROGRESSION - very slow, 30-50 seconds
-                // ============================================
                 let nextChordTime = 30000 + Math.random() * 20000;
 
                 function scheduleNextChord() {
                     if (!musicPlaying) return;
 
                     chordChangeInterval = setTimeout(() => {
-                        // Pick next chord (different from current)
                         let nextChord;
                         do {
                             nextChord = Math.floor(Math.random() * chordSets.length);
                         } while (nextChord === currentChord);
 
                         currentChord = nextChord;
-                        playChord(currentChord, 6.0); // Very slow crossfade
+                        playChord(currentChord, 6.0);
 
-                        // Schedule next change
                         nextChordTime = 30000 + Math.random() * 20000;
                         scheduleNextChord();
                     }, nextChordTime);
@@ -577,27 +544,21 @@
 
                 scheduleNextChord();
 
-                // ============================================
-                // DEEP BASS PULSES - LOUD, slow, powerful thrum
-                // NO POPPING - smooth attack and release
-                // ============================================
                 function playDeepPulse() {
                     if (!musicPlaying) return;
 
                     const now = audioCtx.currentTime;
-                    const baseFreq = 20 + Math.random() * 15; // VERY low
+                    const baseFreq = 20 + Math.random() * 15;
 
                     const osc = audioCtx.createOscillator();
                     osc.type = 'sine';
                     osc.frequency.value = baseFreq;
 
-                    // LOUD bass pulse with SMOOTH envelope
                     const gain = audioCtx.createGain();
-                    gain.gain.setValueAtTime(0.0001, now); // Start from silence
-                    gain.gain.linearRampToValueAtTime(0.2, now + 0.5); // SMOOTH attack
-                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.0); // SMOOTH release
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.linearRampToValueAtTime(0.2, now + 0.5);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.0);
 
-                    // Lowpass filter
                     const filter = audioCtx.createBiquadFilter();
                     filter.type = 'lowpass';
                     filter.frequency.value = 60;
@@ -610,16 +571,11 @@
                     osc.start(now);
                     osc.stop(now + 4.5);
 
-                    // Slow pulses (4-12 seconds)
                     setTimeout(playDeepPulse, 4000 + Math.random() * 8000);
                 }
 
                 playDeepPulse();
 
-                // ============================================
-                // SUB RUMBLE - constant very low noise texture, LOUD
-                // NO POPPING - starts at zero and fades in
-                // ============================================
                 const bufferSize = audioCtx.sampleRate * 4;
                 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 const noiseData = noiseBuffer.getChannelData(0);
@@ -633,16 +589,15 @@
 
                 const noiseFilter = audioCtx.createBiquadFilter();
                 noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.value = 50; // VERY low
+                noiseFilter.frequency.value = 50;
                 noiseFilter.Q.value = 0.2;
 
                 const noiseGain = audioCtx.createGain();
-                noiseGain.gain.setValueAtTime(0.0001, audioCtx.currentTime); // Start silent
-                noiseGain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 3.0); // SMOOTH fade in
+                noiseGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+                noiseGain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 3.0);
 
-                // LFO for filter sweep
                 const filterLFO = audioCtx.createOscillator();
-                filterLFO.frequency.value = 0.015; // VERY slow
+                filterLFO.frequency.value = 0.015;
                 const filterLFOGain = audioCtx.createGain();
                 filterLFOGain.gain.value = 25;
                 filterLFO.connect(filterLFOGain);
@@ -654,10 +609,6 @@
                 noiseGain.connect(masterGain);
                 noise.start(audioCtx.currentTime);
 
-                // ============================================
-                // DEEP ARPEGGIO - very slow, low notes, LOUD
-                // NO POPPING - smooth attack and release
-                // ============================================
                 function playDeepArpeggio() {
                     if (!musicPlaying) return;
 
@@ -671,9 +622,9 @@
                         osc.frequency.value = baseFreq * mult;
 
                         const gain = audioCtx.createGain();
-                        gain.gain.setValueAtTime(0.0001, now + i * 1.5); // Start silent
-                        gain.gain.linearRampToValueAtTime(0.06, now + i * 1.5 + 0.5); // SMOOTH attack
-                        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 1.5 + 4); // SMOOTH release
+                        gain.gain.setValueAtTime(0.0001, now + i * 1.5);
+                        gain.gain.linearRampToValueAtTime(0.06, now + i * 1.5 + 0.5);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 1.5 + 4);
 
                         osc.connect(gain);
                         gain.connect(masterGain);
@@ -682,7 +633,6 @@
                         osc.stop(now + i * 1.5 + 4.5);
                     });
 
-                    // Schedule next arpeggio (15-30 seconds)
                     setTimeout(playDeepArpeggio, 15000 + Math.random() * 15000);
                 }
 
@@ -694,26 +644,57 @@
         }
 
         // ============================================
-        // NO OVERLAY - auto starts on any interaction
-        // Browsers block auto-play audio until user clicks/taps
+        // FIXED: Robust audio start handling
         // ============================================
-        function tryStartAudio() {
+
+        function initAudio() {
             if (audioStarted) return;
             audioStarted = true;
-            startAmbientMusic();
+
+            // If audio context exists but is suspended, resume it
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    console.log('Audio context resumed');
+                }).catch(e => {
+                    console.log('Could not resume audio context:', e);
+                    // Try creating new context
+                    startAmbientMusic();
+                });
+            } else {
+                startAmbientMusic();
+            }
         }
 
-        // Start on any user interaction
-        document.addEventListener('click', tryStartAudio, { once: true });
-        document.addEventListener('touchstart', tryStartAudio, { once: true });
-        document.addEventListener('keydown', tryStartAudio, { once: true });
-        document.addEventListener('mousemove', tryStartAudio, { once: true });
-
-        // Try auto-start on load (will likely fail due to browser policy)
+        // Try to start immediately on load
         window.addEventListener('load', () => {
             setTimeout(() => {
                 startAmbientMusic();
-            }, 500);
+            }, 100);
+        });
+
+        // Also try on DOM ready
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(startAmbientMusic, 100);
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(startAmbientMusic, 100);
+            });
+        }
+
+        // Fallback: start on any user interaction
+        const startEvents = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'];
+        startEvents.forEach(event => {
+            document.addEventListener(event, function handler() {
+                initAudio();
+                document.removeEventListener(event, handler);
+            }, { once: true, passive: true });
+        });
+
+        // Also handle visibility change (user comes back to tab)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         });
 
         // ============================================
@@ -730,7 +711,6 @@
         const minZ = 50;
         const baseSpeed = 2;
 
-        // Create stars
         for (let i = 0; i < starCount; i++) {
             const star = document.createElement('div');
             star.className = 'star-warp';
@@ -754,7 +734,6 @@
             });
         }
 
-        // Create streaks
         const streakColors = ['streak-purple', 'streak-pink', 'streak-orange', 'streak-white'];
         for (let i = 0; i < streakCount; i++) {
             const streak = document.createElement('div');
