@@ -834,17 +834,14 @@
         const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
 
         function initServer() {
-            // Force reset if coming from old version or old branding
+            // Force reset if coming from old version
             const currentVersion = 'night-net-v2';
             const storedVersion = localStorage.getItem('night_version');
             const cachedServices = localStorage.getItem('night_services');
             let needsReset = storedVersion !== currentVersion;
-
-            // Also reset if cached data still contains old 'Night Cloud' branding
             if (cachedServices && cachedServices.toLowerCase().includes('night cloud')) {
                 needsReset = true;
             }
-
             if (needsReset) {
                 localStorage.removeItem('night_services');
                 localStorage.setItem('night_version', currentVersion);
@@ -1468,8 +1465,7 @@
 
         setInterval(async () => {
             if (document.visibilityState === 'visible') {
-                // Always fetch fresh data from API
-                await forceRefreshFromAPI();
+                // Refresh UI from localStorage (don't force API fetch - prevents deleted items from reappearing)
                 await renderPublicServices();
                 if (isAdmin) await renderAdminServices();
                 if (isGuest) await renderGuestServices();
