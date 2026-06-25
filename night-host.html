@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Night Host | Night Net</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0a0f;
+            --secondary: #12121a;
+            --accent: #00f0ff;
+            --accent-dim: #00f0ff33;
+            --text: #e0e0e5;
+            --text-dim: #6b6b7b;
+            --error: #ff3366;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --card: #1a1a2e;
+            --border: #2d2d44;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 20px 40px;
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700;
+            color: var(--accent); text-shadow: 0 0 20px var(--accent-dim);
+            letter-spacing: 2px; text-decoration: none;
+        }
+        .main-container {
+            position: relative; z-index: 1;
+            padding: 100px 20px 40px;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .platform-header {
+            text-align: center; margin-bottom: 40px;
+        }
+        .platform-header h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.5rem;
+            color: var(--text); text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            margin-bottom: 10px;
+        }
+        .platform-header p {
+            color: var(--text-dim); font-size: 1rem; letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex; gap: 0; margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+            width: 100%; max-width: 600px;
+        }
+        .tab {
+            flex: 1; padding: 14px; background: none; border: none;
+            color: var(--text-dim); font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem; font-weight: 500; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.3s ease; position: relative;
+            -webkit-appearance: none; touch-action: manipulation;
+        }
+        .tab.active { color: var(--accent); }
+        .tab.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
+            height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
+        }
+        .tab:hover { color: var(--accent); }
+
+        /* Panels */
+        .panel { display: none; width: 100%; max-width: 900px; }
+        .panel.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Upload Form */
+        .upload-card {
+            background: var(--secondary); border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 20px; padding: 40px; width: 100%; max-width: 600px;
+            margin: 0 auto 30px; text-align: left;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .upload-card h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.1rem;
+            color: var(--accent); margin-bottom: 20px; letter-spacing: 2px;
+            text-align: center;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; margin-bottom: 8px; color: var(--text-dim);
+            font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 10px;
+            color: var(--text); font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem; letter-spacing: 1px; transition: all 0.3s ease; outline: none;
+            -webkit-appearance: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .drop-zone {
+            border: 2px dashed rgba(0, 240, 255, 0.2); border-radius: 12px;
+            padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .drop-zone:hover { border-color: var(--accent); background: rgba(0, 240, 255, 0.03); }
+        .drop-zone.dragover { border-color: var(--accent); background: rgba(0, 240, 255, 0.05); }
+        .drop-zone .icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+        .drop-zone p { color: var(--text-dim); font-size: 0.9rem; }
+        .drop-zone .hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 8px; }
+        .btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--accent), #0088aa);
+            border: none; border-radius: 10px; color: var(--primary);
+            font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
+            transition: all 0.3s ease; -webkit-appearance: none; touch-action: manipulation;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #888, #555); margin-top: 10px;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #008844);
+        }
+
+        /* Game Gallery */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px; width: 100%;
+        }
+        .game-card {
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 15px; overflow: hidden;
+            transition: all 0.3s ease; cursor: pointer;
+            position: relative; text-align: left;
+        }
+        .game-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 240, 255, 0.1);
+        }
+        .game-thumb {
+            width: 100%; height: 160px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; position: relative; overflow: hidden;
+        }
+        .game-thumb.html5 { background: linear-gradient(135deg, #1a2e1a, #162e16); }
+        .game-thumb.unity { background: linear-gradient(135deg, #2e1a1a, #2e1616); }
+        .game-thumb.external { background: linear-gradient(135deg, #1a1a2e, #16162e); }
+        .game-badge {
+            position: absolute; top: 10px; right: 10px;
+            padding: 4px 10px; border-radius: 20px; font-size: 0.65rem;
+            font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .badge-html5 { background: rgba(0, 255, 136, 0.15); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.3); }
+        .badge-unity { background: rgba(255, 51, 102, 0.15); color: var(--error); border: 1px solid rgba(255, 51, 102, 0.3); }
+        .badge-external { background: rgba(255, 170, 0, 0.15); color: var(--warning); border: 1px solid rgba(255, 170, 0, 0.3); }
+        .game-info { padding: 20px; }
+        .game-title {
+            font-family: 'Orbitron', sans-serif; font-size: 0.95rem;
+            color: var(--text); margin-bottom: 6px; letter-spacing: 1px;
+        }
+        .game-desc {
+            font-size: 0.85rem; color: var(--text-dim);
+            margin-bottom: 12px; line-height: 1.4;
+        }
+        .game-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.75rem; color: var(--text-dim);
+        }
+        .game-author { color: var(--accent); }
+        .play-btn {
+            padding: 8px 20px; background: var(--accent);
+            border: none; border-radius: 8px; color: var(--primary);
+            font-family: 'Orbitron', sans-serif; font-size: 0.7rem;
+            font-weight: 700; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s ease; -webkit-appearance: none; touch-action: manipulation;
+        }
+        .play-btn:hover { box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); transform: scale(1.05); }
+
+        /* Player Modal */
+        .player-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.95); z-index: 2000;
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; padding: 20px;
+        }
+        .player-overlay.show { display: flex; }
+        .player-header {
+            width: 100%; max-width: 1000px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding: 0 10px;
+        }
+        .player-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.1rem;
+            color: var(--accent); letter-spacing: 2px;
+        }
+        .player-close {
+            background: transparent; padding: 8px 20px; border-radius: 8px;
+            font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+            letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid var(--error); color: var(--error);
+            -webkit-appearance: none; touch-action: manipulation;
+        }
+        .player-close:hover { background: var(--error); color: white; }
+        .player-frame {
+            width: 100%; max-width: 1000px; height: 600px;
+            border: 2px solid rgba(0, 240, 255, 0.3); border-radius: 10px;
+            background: #000; overflow: hidden;
+        }
+        .player-frame iframe {
+            width: 100%; height: 100%; border: none;
+        }
+        .player-note {
+            margin-top: 15px; color: var(--text-dim); font-size: 0.8rem;
+            text-align: center; max-width: 600px;
+        }
+
+        /* Maintenance Banner */
+        .maintenance-banner {
+            display: none; background: linear-gradient(135deg, rgba(255, 170, 0, 0.1), rgba(255, 51, 102, 0.1));
+            border: 1px solid var(--warning); border-radius: 15px;
+            padding: 40px; text-align: center; width: 100%; max-width: 500px;
+            margin: 0 auto 30px; animation: fadeIn 0.5s ease;
+        }
+        .maintenance-banner.show { display: block; }
+        .maintenance-banner .icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+        .maintenance-banner h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
+            color: var(--warning); margin-bottom: 15px;
+        }
+        .maintenance-banner p { color: var(--text-dim); line-height: 1.6; }
+
+        .footer {
+            margin-top: 60px; padding: 30px; text-align: center;
+            color: var(--text-dim); font-size: 0.8rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            html { font-size: 14px; }
+            .navbar { padding: 12px 16px; }
+            .logo { font-size: 1.1rem; }
+            .main-container { padding: 80px 12px 20px; }
+            .platform-header { margin-bottom: 24px; }
+            .platform-header h1 { font-size: 1.8rem; }
+            .platform-header p { font-size: 0.8rem; letter-spacing: 2px; }
+            .tabs { max-width: 100%; }
+            .tab { padding: 12px 6px; font-size: 0.75rem; letter-spacing: 1px; }
+            .upload-card { padding: 24px 16px; border-radius: 16px; }
+            .drop-zone { padding: 30px 20px; }
+            .drop-zone .icon { font-size: 2.5rem; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 16px; }
+            .game-thumb { height: 140px; }
+            .player-frame { height: 50vh; }
+            .player-header { flex-direction: column; gap: 10px; }
+            .footer { margin-top: 40px; padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            html { font-size: 13px; }
+            .platform-header h1 { font-size: 1.5rem; }
+            .game-thumb { height: 120px; font-size: 2.5rem; }
+        }
+    </style>
+    <base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <nav class="navbar">
+        <a href="index.html" class="logo">NIGHT NET</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="platform-header">
+            <h1>&#127918; NIGHT HOST</h1>
+            <p>Free Game Hosting Platform</p>
+        </div>
+
+        <!-- Maintenance Banner -->
+        <div class="maintenance-banner" id="maintenanceBanner">
+            <span class="icon">&#128295;</span>
+            <h2>Service Under Maintenance</h2>
+            <p>Night Host is currently undergoing scheduled maintenance.<br>Please check back later.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" id="mainTabs">
+            <button class="tab active" onclick="switchTab('browse')">Browse Games</button>
+            <button class="tab" onclick="switchTab('upload')">Upload HTML5</button>
+            <button class="tab" onclick="switchTab('submit')">Submit Unity</button>
+        </div>
+
+        <!-- BROWSE PANEL -->
+        <div class="panel active" id="browsePanel">
+            <div class="gallery-grid" id="gameGallery">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- UPLOAD PANEL (HTML5) -->
+        <div class="panel" id="uploadPanel">
+            <div class="upload-card">
+                <h2>Upload HTML5 Game</h2>
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <span class="icon">&#128193;</span>
+                    <p>Drop your game files here or click to browse</p>
+                    <p class="hint">Supports: .html, .js, .css, images (max 5MB total)</p>
+                    <input type="file" id="fileInput" style="display:none" accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.webp,.mp3,.wav,.ogg" multiple onchange="handleFileSelect(event)">
+                </div>
+                <div class="form-group">
+                    <label>Game Title</label>
+                    <input type="text" id="uploadTitle" placeholder="My Awesome Game" maxlength="40">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="uploadDesc" placeholder="Short description of your game..." maxlength="200"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="uploadAuthor" placeholder="Developer Name" maxlength="30">
+                </div>
+                <button class="btn" onclick="publishHTML5()">Publish Game</button>
+                <div id="uploadStatus" style="margin-top:15px;text-align:center;font-size:0.85rem;color:var(--text-dim);"></div>
+            </div>
+        </div>
+
+        <!-- SUBMIT PANEL (Unity/External) -->
+        <div class="panel" id="submitPanel">
+            <div class="upload-card">
+                <h2>Submit Unity / External Game</h2>
+                <p style="color:var(--text-dim);text-align:center;margin-bottom:20px;font-size:0.85rem;">
+                    Host your Unity WebGL build on itch.io, GitHub Pages, or any free host.<br>
+                    Paste the link below and we'll embed it in Night Host.
+                </p>
+                <div class="form-group">
+                    <label>Game URL</label>
+                    <input type="url" id="submitUrl" placeholder="https://myname.itch.io/my-game">
+                </div>
+                <div class="form-group">
+                    <label>Game Title</label>
+                    <input type="text" id="submitTitle" placeholder="My Unity Game" maxlength="40">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="submitDesc" placeholder="What's your game about?" maxlength="200"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="submitAuthor" placeholder="Developer Name" maxlength="30">
+                </div>
+                <div class="form-group">
+                    <label>Game Type</label>
+                    <select id="submitType">
+                        <option value="unity">Unity WebGL</option>
+                        <option value="external">Other External</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="submitExternal()">Submit Game</button>
+                <div id="submitStatus" style="margin-top:15px;text-align:center;font-size:0.85rem;color:var(--text-dim);"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&#169; 2026 Night Net. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- GAME PLAYER OVERLAY -->
+    <div class="player-overlay" id="playerOverlay">
+        <div class="player-header">
+            <h2 class="player-title" id="playerTitle">Game</h2>
+            <button class="player-close" onclick="closePlayer()">&#10005; CLOSE</button>
+        </div>
+        <div class="player-frame" id="playerFrame">
+            <!-- iframe injected here -->
+        </div>
+        <p class="player-note" id="playerNote"></p>
+    </div>
+
+    <script>
+        const PLATFORM_ID = 'night-host';
+        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        let uploadedFiles = [];
+        let demoGames = [
+            { id: 'demo-1', title: 'Neon Pong', desc: 'Classic Pong with cyberpunk aesthetics', author: 'Night Net', type: 'html5', thumb: '&#127955;', data: null, url: 'night-play.html' },
+            { id: 'demo-2', title: 'Void Defender', desc: 'Space shooter with neon graphics', author: 'Night Net', type: 'html5', thumb: '&#128640;', data: null, url: 'night-play.html' },
+            { id: 'demo-3', title: 'Sample Unity Game', desc: 'Example Unity WebGL build hosted on itch.io', author: 'DemoDev', type: 'unity', thumb: '&#127918;', data: null, url: 'https://itch.io' },
+        ];
+
+        async function getServices() {
+            try {
+                const res = await fetch(API_URL + '/services', {
+                    method: 'GET', headers: { 'Content-Type': 'application/json' }
+                });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                localStorage.setItem('night_services', JSON.stringify(data));
+                return data;
+            } catch (err) {
+                return JSON.parse(localStorage.getItem('night_services') || '[]');
+            }
+        }
+
+        function getAuth() {
+            return JSON.parse(localStorage.getItem('night_auth') || '{"isLoggedIn":false,"role":null}');
+        }
+
+        async function checkPlatformStatus() {
+            const services = await getServices();
+            const platform = services.find(s => s.id === PLATFORM_ID);
+            const banner = document.getElementById('maintenanceBanner');
+            const tabs = document.getElementById('mainTabs');
+            const panels = document.querySelectorAll('.panel');
+
+            if (platform && platform.status === 'maintenance') {
+                const auth = getAuth();
+                if (!(auth.isLoggedIn && auth.role === 'admin')) {
+                    banner.classList.add('show');
+                    tabs.style.display = 'none';
+                    panels.forEach(p => p.classList.remove('active'));
+                    return;
+                }
+            }
+            banner.classList.remove('show');
+            tabs.style.display = 'flex';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            if (tab === 'browse') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('browsePanel').classList.add('active');
+                renderGallery();
+            } else if (tab === 'upload') {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('uploadPanel').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[2].classList.add('active');
+                document.getElementById('submitPanel').classList.add('active');
+            }
+        }
+
+        // Drag & Drop
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+        }
+
+        function handleFiles(files) {
+            uploadedFiles = Array.from(files);
+            const status = document.getElementById('uploadStatus');
+            let totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
+            let sizeMB = (totalSize / 1024 / 1024).toFixed(2);
+            status.innerHTML = '<span style="color:var(--success);">&#10003; ' + uploadedFiles.length + ' files selected (' + sizeMB + ' MB)</span>';
+        }
+
+        function publishHTML5() {
+            const title = document.getElementById('uploadTitle').value.trim();
+            const desc = document.getElementById('uploadDesc').value.trim();
+            const author = document.getElementById('uploadAuthor').value.trim();
+            const status = document.getElementById('uploadStatus');
+
+            if (!title) { status.innerHTML = '<span style="color:var(--error);">Please enter a game title</span>'; return; }
+            if (uploadedFiles.length === 0) { status.innerHTML = '<span style="color:var(--error);">Please select at least one file</span>'; return; }
+
+            // Store in localStorage (demo limitation - real would use server)
+            let games = JSON.parse(localStorage.getItem('night_host_games') || '[]');
+            let gameData = {
+                id: 'user-' + Date.now(),
+                title: title,
+                desc: desc || 'No description',
+                author: author || 'Anonymous',
+                type: 'html5',
+                thumb: '&#127918;',
+                files: uploadedFiles.map(f => f.name),
+                timestamp: new Date().toISOString()
+            };
+            games.unshift(gameData);
+            localStorage.setItem('night_host_games', JSON.stringify(games));
+
+            status.innerHTML = '<span style="color:var(--success);">&#10003; Game published! Switch to Browse to see it.</span>';
+            document.getElementById('uploadTitle').value = '';
+            document.getElementById('uploadDesc').value = '';
+            document.getElementById('uploadAuthor').value = '';
+            uploadedFiles = [];
+        }
+
+        function submitExternal() {
+            const url = document.getElementById('submitUrl').value.trim();
+            const title = document.getElementById('submitTitle').value.trim();
+            const desc = document.getElementById('submitDesc').value.trim();
+            const author = document.getElementById('submitAuthor').value.trim();
+            const type = document.getElementById('submitType').value;
+            const status = document.getElementById('submitStatus');
+
+            if (!url || !title) { status.innerHTML = '<span style="color:var(--error);">URL and title are required</span>'; return; }
+            if (!url.startsWith('http')) { status.innerHTML = '<span style="color:var(--error);">URL must start with http:// or https://</span>'; return; }
+
+            let games = JSON.parse(localStorage.getItem('night_host_games') || '[]');
+            games.unshift({
+                id: 'ext-' + Date.now(),
+                title: title,
+                desc: desc || 'No description',
+                author: author || 'Anonymous',
+                type: type,
+                thumb: '&#127918;',
+                url: url,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('night_host_games', JSON.stringify(games));
+
+            status.innerHTML = '<span style="color:var(--success);">&#10003; Game submitted! Switch to Browse to see it.</span>';
+            document.getElementById('submitUrl').value = '';
+            document.getElementById('submitTitle').value = '';
+            document.getElementById('submitDesc').value = '';
+            document.getElementById('submitAuthor').value = '';
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('gameGallery');
+            let games = JSON.parse(localStorage.getItem('night_host_games') || '[]');
+            let allGames = [...games, ...demoGames];
+
+            if (allGames.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-dim);padding:40px;">No games yet. Be the first to upload!</div>';
+                return;
+            }
+
+            grid.innerHTML = allGames.map(g => {
+                const typeClass = g.type === 'html5' ? 'html5' : (g.type === 'unity' ? 'unity' : 'external');
+                const badgeClass = g.type === 'html5' ? 'badge-html5' : (g.type === 'unity' ? 'badge-unity' : 'badge-external');
+                const badgeText = g.type === 'html5' ? 'HTML5' : (g.type === 'unity' ? 'Unity' : 'External');
+                return `
+                    <div class="game-card" onclick="playGame('${g.id}')">
+                        <div class="game-thumb ${typeClass}">
+                            <span>${g.thumb || '&#127918;'}</span>
+                            <span class="game-badge ${badgeClass}">${badgeText}</span>
+                        </div>
+                        <div class="game-info">
+                            <div class="game-title">${escapeHtml(g.title)}</div>
+                            <div class="game-desc">${escapeHtml(g.desc)}</div>
+                            <div class="game-meta">
+                                <span class="game-author">by ${escapeHtml(g.author)}</span>
+                                <button class="play-btn">PLAY</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function playGame(id) {
+            let games = JSON.parse(localStorage.getItem('night_host_games') || '[]');
+            let allGames = [...games, ...demoGames];
+            let game = allGames.find(g => g.id === id);
+            if (!game) return;
+
+            const overlay = document.getElementById('playerOverlay');
+            const frame = document.getElementById('playerFrame');
+            const title = document.getElementById('playerTitle');
+            const note = document.getElementById('playerNote');
+
+            title.textContent = game.title;
+            frame.innerHTML = '';
+
+            if (game.type === 'html5' && game.url) {
+                // Internal HTML5 game - redirect or iframe
+                if (game.url === 'night-play.html') {
+                    window.location.href = game.url;
+                    return;
+                }
+                frame.innerHTML = '<iframe src="' + game.url + '" allowfullscreen></iframe>';
+                note.textContent = 'HTML5 Game - Use fullscreen for best experience';
+            } else if (game.type === 'unity' || game.type === 'external') {
+                // External game - iframe with sandbox
+                frame.innerHTML = '<iframe src="' + game.url + '" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups"></iframe>';
+                note.textContent = 'External game hosted on third-party platform. Night Net is not responsible for content.';
+            }
+
+            overlay.classList.add('show');
+        }
+
+        function closePlayer() {
+            document.getElementById('playerOverlay').classList.remove('show');
+            document.getElementById('playerFrame').innerHTML = '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Init
+        checkPlatformStatus();
+        renderGallery();
+
+        // Poll for status
+        setInterval(() => {
+            if (document.visibilityState === 'visible') checkPlatformStatus();
+        }, 3000);
+    </script>
+</body>
+</html>
