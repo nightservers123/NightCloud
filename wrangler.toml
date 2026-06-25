@@ -1,7 +1,41 @@
 name = "night-net-api"
 main = "src/index.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-06-25"
 
-[assets]
-directory = "./public"
-not_found_handling = "404-page"
+# KV Namespace for storing services, users, and email threads
+[[kv_namespaces]]
+binding = "NIGHT_KV"
+id = "your-kv-namespace-id-here"
+preview_id = "your-preview-kv-id-here"
+
+# Optional: D1 Database for structured data (users, conversations)
+[[d1_databases]]
+binding = "NIGHT_DB"
+database_name = "night-net-db"
+database_id = "your-d1-database-id-here"
+
+# Optional: R2 Bucket for file storage
+[[r2_buckets]]
+binding = "NIGHT_STORAGE"
+bucket_name = "night-net-storage"
+
+# Environment variables
+[vars]
+API_VERSION = "v1"
+AI_MODEL = "openai"
+MAX_EMAIL_HISTORY = "10"
+
+# Development environment
+[env.dev]
+name = "night-net-api-dev"
+vars = { ENVIRONMENT = "development" }
+
+# Production environment
+[env.production]
+name = "night-net-api"
+vars = { ENVIRONMENT = "production" }
+
+# Routes (optional - if using custom domain)
+# [[routes]]
+# pattern = "api.night.net/*"
+# custom_domain = true
