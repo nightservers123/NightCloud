@@ -967,8 +967,10 @@
                 const card = e.target.closest('#featuresGrid .feature-card');
                 if (!card) return;
                 const name = card.getAttribute('data-service-name');
+                const url = card.getAttribute('data-service-url');
+                const id = card.getAttribute('data-service-id');
                 if (!name) return;
-                await handleServiceClick(name);
+                await handleServiceClick(name, url, id);
             });
         }
 
@@ -1190,7 +1192,7 @@
             const grid = document.getElementById('featuresGrid');
             if (!grid) return;
             grid.innerHTML = services.map(s => `
-                <div class="feature-card" data-service-name="${s.name}">
+                <div class="feature-card" data-service-name="${s.name}" data-service-url="${s.url || ''}" data-service-id="${s.id}">
                     <span class="feature-icon">${s.icon}</span>
                     <h3>${s.name}</h3>
                     <p>${s.desc}</p>
@@ -1199,13 +1201,14 @@
             `).join('');
         }
 
-        async function handleServiceClick(name) {
+        async function handleServiceClick(name, url, id) {
+            console.log('Clicked:', name, 'URL:', url, 'ID:', id);
             const services = await getServices();
-            const service = services.find(s => s.name === name);
+            const service = services.find(s => s.id === id || s.name === name);
             if (service && service.status === 'maintenance') {
                 if (isAdmin) {
-                    if (service.url) {
-                        window.location.href = service.url;
+                    if (service.url || url) {
+                        window.location.href = service.url || url;
                     } else {
                         alert('Admin Access: ' + name + ' &#8212; Full access granted.');
                     }
@@ -1213,8 +1216,8 @@
                 }
                 showMaintenance(name);
             } else if (service && service.status === 'online') {
-                if (service.url) {
-                    window.location.href = service.url;
+                if (service.url || url) {
+                    window.location.href = service.url || url;
                 } else {
                     alert(name + ' is online! Redirecting...');
                 }
