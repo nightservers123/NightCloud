@@ -679,13 +679,13 @@
                 <div class="service-list" id="adminServiceList"></div>
             </div>
 
-            <div class="admin-section">
-                <h3>&#10133; Add New Service</h3>
-                <form class="add-service-form" onsubmit="addNewService(event)">
-                    <div class="form-group">
-                        <label>Service Name</label>
-                        <input type="text" id="newServiceName" placeholder="e.g. Night VPN" required>
-                    </div>
+            <div id="adminLogsPanel" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:24px;max-height:400px;overflow-y:auto;">
+                <h3 style="color:var(--accent);margin-bottom:12px;font-size:16px;">📊 Visitor Logs</h3>
+                <p style="color:var(--text-dim)">Loading visitor logs...</p>
+            </div>
+
+
+                        
                     <div class="form-group">
                         <label>Description</label>
                         <input type="text" id="newServiceDesc" placeholder="e.g. Secure virtual private network" required>
@@ -928,7 +928,66 @@
         let isGuest = false;
         let editingServiceId = null;
 
-        async function init() {
+        async function renderAdminLogs() {
+            const panel = document.getElementById('adminLogsPanel');
+            if (!panel) return;
+            try {
+                const res = await fetch(API_URL + '/logs');
+                if (!res.ok) throw new Error('Failed to load logs');
+                const data = await res.json();
+                const logs = data.logs || [];
+                if (logs.length === 0) {
+                    panel.innerHTML = '<p style="color:var(--text-dim);padding:10px;">No visitor logs yet</p>';
+                    return;
+                }
+                panel.innerHTML = '<h3 style="color:var(--accent);margin-bottom:12px;font-size:16px;">📊 Visitor Logs</h3>' +
+                    logs.slice().reverse().map(l => `
+                    <div style="padding:10px;border-bottom:1px solid var(--border);font-size:12px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <span style="color:var(--accent);font-weight:600;min-width:100px;">${l.ip}</span>
+                            <span style="color:var(--text-dim);min-width:140px;">${new Date(l.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+                            <span style="color:var(--text);">${l.page}</span>
+                            <span style="color:var(--warning);">${l.device}</span>
+                            <span style="color:#a855f7;">${l.username}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                panel.innerHTML = '<p style="color:var(--text-dim);padding:10px;">Error loading logs: ' + err.message + '</p>';
+            }
+        }
+
+        // Event delegation for dynamically generated admin buttons
+document.addEventListener('click', function(e) {
+    const target = e.target;
+
+    // Handle toggle switches
+    if (target.classList.contains('toggle-switch') && target.dataset.action === 'toggle') {
+        e.preventDefault();
+        toggleServiceStatus(target.dataset.id);
+        return;
+    }
+
+    // Handle edit buttons
+    if (target.classList.contains('edit') && target.dataset.action === 'edit') {
+        e.preventDefault();
+        openEditModal(target.dataset.id);
+        return;
+    }
+
+    // Handle delete buttons
+    if (target.classList.contains('delete') && target.dataset.action === 'delete') {
+        e.preventDefault();
+        if (confirm('Delete this service?')) {
+            deleteService(target.dataset.id);
+        }
+        return;
+    }
+});
+
+async function init() {
             initServer();
             createParticles();
             checkExistingSession();
@@ -1234,7 +1293,7 @@
             const list = document.getElementById('adminServiceList');
             if (!list) return;
             list.innerHTML = services.map(s => `
-                <div class="service-item">
+                <div class="service-item" data-service-id="${s.id}">
                     <div class="service-info">
                         <span class="service-icon">${s.icon}</span>
                         <div class="service-details">
@@ -1243,15 +1302,16 @@
                         </div>
                     </div>
                     <div class="service-status-toggle">
-                        <span style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'}">${s.status.toUpperCase()}</span>
-                        <div class="toggle-switch ${s.status}" onclick="toggleServiceStatus('${s.id}')"></div>
+                        <span class="status-text" style="font-size: 0.8rem; color: ${s.status === 'online' ? 'var(--success)' : 'var(--warning)'}">${s.status.toUpperCase()}</span>
+                        <div class="toggle-switch ${s.status}" data-action="toggle" data-id="${s.id}"></div>
                     </div>
                     <div class="service-actions">
-                        <button class="action-btn edit" onclick="openEditModal('${s.id}')">Edit</button>
-                        <button class="action-btn delete" onclick="deleteService('${s.id}')">Delete</button>
+                        <button class="action-btn edit" data-action="edit" data-id="${s.id}">Edit</button>
+                        <button class="action-btn delete" data-action="delete" data-id="${s.id}">Delete</button>
                     </div>
                 </div>
             `).join('');
+            await renderAdminLogs();
         }
 
         async function renderGuestServices() {
