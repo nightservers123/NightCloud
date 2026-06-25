@@ -831,10 +831,10 @@
             { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '&#128274;', status: 'online', url: 'night-secure.html' }
         ];
 
-        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
 
         function initServer() {
-            // Force reset if coming from old Night Cloud version
+            // Force reset if coming from old version
             const currentVersion = 'night-net-v1';
             const storedVersion = localStorage.getItem('night_version');
             if (storedVersion !== currentVersion) {
@@ -853,10 +853,16 @@
         }
 
         async function getServices() {
-            // localStorage is the source of truth. API is only used for backup/restore.
+            // localStorage is the source of truth
             const local = localStorage.getItem('night_services');
             if (local) {
-                return JSON.parse(local);
+                const parsed = JSON.parse(local);
+                // If empty array (all deleted), restore defaults
+                if (Array.isArray(parsed) && parsed.length === 0) {
+                    localStorage.setItem('night_services', JSON.stringify(DEFAULT_SERVICES));
+                    return DEFAULT_SERVICES;
+                }
+                return parsed;
             }
             // Fallback to defaults if nothing in localStorage
             return DEFAULT_SERVICES;
@@ -893,7 +899,6 @@
             createParticles();
             checkExistingSession();
             setupGuestPanelClicks();
-            // Render from localStorage (source of truth)
             await renderPublicServices();
             if (isAdmin) await renderAdminServices();
             if (isGuest) await renderGuestServices();
@@ -995,8 +1000,8 @@
             }
 
             const services = await getServices();
-            const nightCloud = services.find(s => s.id === 'night-cloud');
-            if (nightCloud && nightCloud.status === 'maintenance') {
+            const nightNet = services.find(s => s.id === 'night-net');
+            if (nightNet && nightNet.status === 'maintenance') {
                 showMaintenance('Night Net Sign In');
                 return;
             }
@@ -1042,8 +1047,8 @@
             e.preventDefault();
 
             const services = await getServices();
-            const nightCloud = services.find(s => s.id === 'night-cloud');
-            if (nightCloud && nightCloud.status === 'maintenance') {
+            const nightNet = services.find(s => s.id === 'night-net');
+            if (nightNet && nightNet.status === 'maintenance') {
                 showMaintenance('Night Net Account Creation');
                 return;
             }
@@ -1419,7 +1424,6 @@
 
         setInterval(async () => {
             if (document.visibilityState === 'visible') {
-                // Refresh UI from localStorage only (source of truth)
                 await renderPublicServices();
                 if (isAdmin) await renderAdminServices();
                 if (isGuest) await renderGuestServices();
