@@ -824,8 +824,11 @@
             { id: 'night-net', name: 'Night Net', desc: 'Network infrastructure hub', icon: '&#9729;&#65039;', status: 'online', url: 'index.html' },
             { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '&#127918;', status: 'online', url: 'night-play.html' },
             { id: 'night-host', name: 'Night Host', desc: 'Free game hosting platform', icon: '&#127760;', status: 'online', url: 'night-host.html' },
+            { id: 'night-mail', name: 'Night Mail', desc: 'Encrypted messaging', icon: '&#9993;&#65039;', status: 'online', url: 'night-mail.html' },
             { id: 'night-ai', name: 'Night AI', desc: 'Artificial intelligence', icon: '&#129302;', status: 'online', url: 'night-ai.html' },
             { id: 'night-multiplayer', name: 'Night Multiplayer', desc: 'Real-time multiplayer services', icon: '&#128101;', status: 'online', url: 'night-multiplayer.html' },
+            { id: 'night-store', name: 'Night Store', desc: 'Digital marketplace', icon: '&#128722;', status: 'online', url: 'night-store.html' },
+            { id: 'night-secure', name: 'Night Secure', desc: 'Cybersecurity suite', icon: '&#128274;', status: 'online', url: 'night-secure.html' }
         ];
 
         const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
@@ -1437,7 +1440,8 @@
             if (isAdmin) return;
             if (isGuest) return;
             const features = [
-        
+                'Night Net Dashboard', 'Night Play Store', 'Night Mail Service',
+                'Night AI Engine', 'Night Store', 'Night Secure Portal',
                 'User Settings', 'API Access', 'Analytics Dashboard', 'Team Management'
             ];
             const randomFeature = features[Math.floor(Math.random() * features.length)];
