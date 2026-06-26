@@ -967,7 +967,80 @@
             { id: 'night-multiplayer', name: 'Night Multiplayer', desc: 'Real-time multiplayer services', icon: '&#128377;&#65039;', status: 'online', url: 'night-multiplayer.html' }
         ];
 
-        const API_URL = 'https://night-cloud-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+
+        // Maintenance mode check - blocks access if maintenance is ON
+        (async function() {
+            try {
+                const res = await fetch(API_URL + '/maintenance');
+                if (!res.ok) return;
+                const settings = await res.json();
+
+                // Admin bypass - add ?admin=true to URL to skip maintenance
+                const urlParams = new URLSearchParams(window.location.search);
+                const isAdmin = urlParams.get('admin') === 'true';
+
+                if (settings.maintenanceMode && !isAdmin) {
+                    // Replace entire page with maintenance screen
+                    document.body.innerHTML = `
+                        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:1.5rem; font-family:'Inter',sans-serif; overflow:hidden;">
+                            <canvas id="maintCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
+                            <div style="position:relative; z-index:1;">
+                                <div style="font-size:clamp(2.5rem, 10vw, 4rem); font-weight:900; letter-spacing:-3px; background:linear-gradient(135deg, #6366f1 0%, #a855f7 30%, #ec4899 60%, #f97316 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.5rem; filter:drop-shadow(0 0 20px rgba(99,102,241,0.3));">Night</div>
+                                <div style="font-size:0.85rem; color:#6366f1; font-weight:600; letter-spacing:6px; text-transform:uppercase; margin-bottom:2rem; opacity:0.7;">Net</div>
+                                <div style="margin-bottom:1.5rem;">
+                                    <div style="font-size:2.8rem; color:#6366f1; animation:spin 10s linear infinite; display:inline-block;">&#9881;</div>
+                                    <div style="font-size:1.6rem; color:#a855f7; animation:spin 6s linear infinite reverse; display:inline-block; margin-left:-10px;">&#9881;</div>
+                                </div>
+                                <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); color:#ef4444; padding:8px 20px; border-radius:50px; font-size:0.75rem; font-weight:700; margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:2px;">
+                                    <span style="width:7px; height:7px; background:#ef4444; border-radius:50%; animation:blink 1.2s infinite;"></span>
+                                    Under Maintenance
+                                </div>
+                                <h1 style="font-size:clamp(1.3rem, 5.5vw, 2.2rem); font-weight:700; margin-bottom:0.8rem; color:#f1f1f6;">${settings.headline || "We'll Be Right Back"}</h1>
+                                <p style="font-size:clamp(0.85rem, 3.5vw, 1.05rem); color:#8b8b9a; line-height:1.7; margin-bottom:2rem; max-width:85%;">${settings.message || 'Night Net is currently undergoing scheduled maintenance.'}</p>
+                                <div style="width:200px; height:3px; background:rgba(255,255,255,0.05); border-radius:3px; margin:0 auto 2rem; overflow:hidden; position:relative;">
+                                    <div style="position:absolute; top:0; left:0; height:100%; width:40%; background:linear-gradient(90deg, #6366f1, #a855f7, #ec4899); border-radius:3px; animation:progressMove 3s ease-in-out infinite;"></div>
+                                </div>
+                                <p style="font-size:0.8rem; color:#5a5a6e;">Need help? <a href="mailto:${settings.contactEmail || 'NightIndustriesservers@gmail.com'}" style="color:#6366f1; text-decoration:none; font-weight:600;">Email us</a></p>
+                            </div>
+                        </div>
+                        <style>
+                            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                            @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+                            @keyframes progressMove { 0% { left: -40%; } 100% { left: 100%; } }
+                        </style>
+                    `;
+
+                    // Simple starfield animation
+                    const c = document.getElementById('maintCanvas');
+                    if (c) {
+                        const ctx = c.getContext('2d');
+                        c.width = window.innerWidth;
+                        c.height = window.innerHeight;
+                        const stars = [];
+                        for (let i = 0; i < 100; i++) {
+                            stars.push({ x: Math.random() * c.width, y: Math.random() * c.height, s: Math.random() * 1.5 + 0.3, sp: Math.random() * 0.5 + 0.2 });
+                        }
+                        function anim() {
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(0, 0, c.width, c.height);
+                            stars.forEach(s => {
+                                s.y -= s.sp;
+                                if (s.y < 0) { s.y = c.height; s.x = Math.random() * c.width; }
+                                ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+                                ctx.fillStyle = '#fff';
+                                ctx.beginPath();
+                                ctx.arc(s.x, s.y, s.s, 0, Math.PI * 2);
+                                ctx.fill();
+                            });
+                            ctx.globalAlpha = 1;
+                            requestAnimationFrame(anim);
+                        }
+                        anim();
+                    }
+                }
+            } catch(e) { console.log('Maintenance check failed:', e); }
+        })();
 
         function initServer() {
             // Force reset if coming from old Night Cloud version
