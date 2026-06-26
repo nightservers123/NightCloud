@@ -16,7 +16,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Login Screen */
         .login-screen {
             position: fixed;
             top: 0; left: 0;
@@ -98,9 +97,6 @@
             border-color: rgba(99,102,241,0.4);
             box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
         }
-        .input-group input::placeholder {
-            color: #3a3a4e;
-        }
         .login-btn {
             width: 100%;
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
@@ -116,10 +112,6 @@
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(99,102,241,0.3);
         }
-        .login-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 2px 8px rgba(99,102,241,0.2);
-        }
         .login-error {
             color: #ef4444;
             font-size: 0.8rem;
@@ -130,7 +122,6 @@
         }
         .login-error.show { opacity: 1; }
 
-        /* Main Dashboard */
         .dashboard {
             display: none;
             min-height: 100vh;
@@ -149,11 +140,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
         }
         .header-logo {
             font-size: 1.3rem;
@@ -174,39 +160,6 @@
             border-radius: 20px;
             border: 1px solid rgba(99,102,241,0.2);
         }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .status-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 5px 12px;
-            border-radius: 20px;
-            border: 1px solid;
-        }
-        .status-pill.online {
-            color: #22c55e;
-            background: rgba(34,197,94,0.08);
-            border-color: rgba(34,197,94,0.25);
-        }
-        .status-pill.maintenance {
-            color: #ef4444;
-            background: rgba(239,68,68,0.08);
-            border-color: rgba(239,68,68,0.25);
-        }
-        .status-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            animation: blink 1.5s infinite;
-        }
-        .status-pill.online .status-dot { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5); }
-        .status-pill.maintenance .status-dot { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
-        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
         .logout-btn {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -219,7 +172,6 @@
             font-family: 'Inter', sans-serif;
             transition: all 0.2s;
         }
-        .logout-btn:active { background: rgba(255,255,255,0.08); }
 
         .content {
             padding: 1.5rem;
@@ -242,22 +194,14 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .section-title .icon {
-            font-size: 1rem;
         }
 
-        /* Toggle Switch */
         .toggle-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1.2rem;
         }
-        .toggle-row:last-child { margin-bottom: 0; }
         .toggle-label {
             font-size: 0.95rem;
             color: #c7c7d1;
@@ -310,11 +254,9 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        /* Inputs */
         .form-group {
             margin-bottom: 1rem;
         }
-        .form-group:last-child { margin-bottom: 0; }
         .form-group label {
             display: block;
             font-size: 0.75rem;
@@ -344,55 +286,6 @@
             border-color: rgba(99,102,241,0.4);
             box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
         }
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        .form-group select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b7e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 40px;
-        }
-        .form-group select option {
-            background: #0a0a14;
-            color: #e0e0e5;
-        }
-
-        .time-display {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-        .time-box {
-            background: rgba(99,102,241,0.08);
-            border: 1px solid rgba(99,102,241,0.15);
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            text-align: center;
-            min-width: 70px;
-        }
-        .time-box .value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #6366f1;
-            font-variant-numeric: tabular-nums;
-        }
-        .time-box .label {
-            font-size: 0.65rem;
-            color: #5a5a6e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 2px;
-        }
-        .time-sep {
-            font-size: 1.5rem;
-            color: #3a3a4e;
-            font-weight: 300;
-        }
 
         .action-btn {
             width: 100%;
@@ -409,35 +302,16 @@
             box-shadow: 0 4px 15px rgba(99,102,241,0.25);
             margin-top: 0.5rem;
         }
-        .action-btn:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(99,102,241,0.15);
-        }
         .action-btn.secondary {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: none;
             color: #c7c7d1;
         }
-        .action-btn.secondary:active {
-            background: rgba(255,255,255,0.08);
-        }
         .action-btn.danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             box-shadow: 0 4px 15px rgba(239,68,68,0.25);
         }
-
-        .preview-box {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            color: #8b8b9a;
-            line-height: 1.6;
-        }
-        .preview-box strong { color: #c7c7d1; }
 
         .stats-grid {
             display: grid;
@@ -455,14 +329,6 @@
             font-size: 1.4rem;
             font-weight: 700;
             color: #f1f1f6;
-            font-variant-numeric: tabular-nums;
-        }
-        .stat-card .label {
-            font-size: 0.7rem;
-            color: #5a5a6e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
         }
         .stat-card .value.online { color: #22c55e; }
         .stat-card .value.maintenance { color: #ef4444; }
@@ -480,22 +346,35 @@
             font-weight: 600;
             z-index: 50;
             transition: transform 0.4s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(34,197,94,0.3);
         }
         .saved-toast.show {
             transform: translateX(-50%) translateY(0);
         }
 
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .time-display { flex-wrap: wrap; justify-content: center; }
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid;
+        }
+        .status-pill.online {
+            color: #22c55e;
+            background: rgba(34,197,94,0.08);
+            border-color: rgba(34,197,94,0.25);
+        }
+        .status-pill.maintenance {
+            color: #ef4444;
+            background: rgba(239,68,68,0.08);
+            border-color: rgba(239,68,68,0.25);
         }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <!-- Login Screen -->
     <div class="login-screen" id="loginScreen">
         <div class="login-logo">Night</div>
         <div class="login-subtitle">Admin</div>
@@ -510,16 +389,14 @@
         </div>
     </div>
 
-    <!-- Dashboard -->
     <div class="dashboard" id="dashboard">
         <div class="header">
-            <div class="header-left">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
                 <div class="header-logo">Night</div>
                 <div class="header-tag">Admin</div>
             </div>
-            <div class="header-right">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
                 <div class="status-pill maintenance" id="headerStatus">
-                    <span class="status-dot"></span>
                     <span id="headerStatusText">Maintenance</span>
                 </div>
                 <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -527,24 +404,22 @@
         </div>
 
         <div class="content">
-            <!-- Status Overview -->
             <div class="section">
-                <div class="section-title"><span class="icon">&#128200;</span> Status Overview</div>
+                <div class="section-title">Status Overview</div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="value maintenance" id="statusValue">MAINTENANCE</div>
-                        <div class="label">Current Mode</div>
+                        <div class="label" style="font-size:0.7rem; color:#5a5a6e; text-transform:uppercase;">Current Mode</div>
                     </div>
                     <div class="stat-card">
-                        <div class="value" id="etaValue">--:--:--</div>
-                        <div class="label">Estimated Return</div>
+                        <div class="value" id="etaValue">--:--</div>
+                        <div class="label" style="font-size:0.7rem; color:#5a5a6e; text-transform:uppercase;">Estimated Return</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Maintenance Controls -->
             <div class="section">
-                <div class="section-title"><span class="icon">&#9881;</span> Maintenance Controls</div>
+                <div class="section-title">Maintenance Controls</div>
 
                 <div class="toggle-row">
                     <div class="toggle-label">
@@ -580,10 +455,8 @@
                 </div>
             </div>
 
-            <!-- Wait Time Settings -->
             <div class="section">
-                <div class="section-title"><span class="icon">&#9200;</span> Wait Time Settings</div>
-
+                <div class="section-title">Wait Time Settings</div>
                 <div class="form-group">
                     <label>Estimated Return Time</label>
                     <select id="waitPreset">
@@ -594,79 +467,42 @@
                         <option value="120">2 hours</option>
                         <option value="240">4 hours</option>
                         <option value="480">8 hours</option>
-                        <option value="1440">24 hours</option>
                     </select>
                 </div>
-
-                <div class="form-group" id="customTimeGroup" style="display:none;">
-                    <label>Custom Duration (minutes)</label>
-                    <input type="number" id="customMinutes" placeholder="Enter minutes" min="1" max="10080">
-                </div>
-
-                <div class="time-display" id="timeDisplay">
-                    <div class="time-box">
-                        <div class="value" id="hoursVal">00</div>
-                        <div class="label">Hours</div>
-                    </div>
-                    <div class="time-sep">:</div>
-                    <div class="time-box">
-                        <div class="value" id="minutesVal">30</div>
-                        <div class="label">Minutes</div>
-                    </div>
-                    <div class="time-sep">:</div>
-                    <div class="time-box">
-                        <div class="value" id="secondsVal">00</div>
-                        <div class="label">Seconds</div>
-                    </div>
-                </div>
-
                 <button class="action-btn" id="setTimeBtn">Set Wait Time</button>
             </div>
 
-            <!-- Message Editor -->
             <div class="section">
-                <div class="section-title"><span class="icon">&#9998;</span> Maintenance Message</div>
-
+                <div class="section-title">Maintenance Message</div>
                 <div class="form-group">
                     <label>Headline</label>
-                    <input type="text" id="headlineInput" value="We'll Be Right Back" placeholder="Enter headline">
+                    <input type="text" id="headlineInput" value="We'll Be Right Back">
                 </div>
-
                 <div class="form-group">
                     <label>Message Body</label>
-                    <textarea id="messageInput" placeholder="Enter maintenance message">Night Net is currently undergoing scheduled maintenance to improve your experience. We're working hard to get everything back online as soon as possible.</textarea>
+                    <textarea id="messageInput">Night Net is currently undergoing scheduled maintenance to improve your experience. We're working hard to get everything back online as soon as possible.</textarea>
                 </div>
-
                 <div class="form-group">
                     <label>Contact Email</label>
-                    <input type="email" id="emailInput" value="NightIndustriesservers@gmail.com" placeholder="Enter contact email">
+                    <input type="email" id="emailInput" value="NightIndustriesservers@gmail.com">
                 </div>
-
-                <div class="preview-box" id="messagePreview">
-                    <strong>Preview:</strong><br>
-                    <span id="previewHeadline">We'll Be Right Back</span><br><br>
-                    <span id="previewMessage">Night Net is currently undergoing scheduled maintenance to improve your experience. We're working hard to get everything back online as soon as possible.</span><br><br>
-                    Contact: <span id="previewEmail">NightIndustriesservers@gmail.com</span>
-                </div>
-
                 <button class="action-btn" id="saveMessageBtn">Save Message</button>
             </div>
 
-            <!-- Actions -->
             <div class="section">
-                <div class="section-title"><span class="icon">&#128736;</span> Quick Actions</div>
+                <div class="section-title">Quick Actions</div>
                 <button class="action-btn secondary" id="resetBtn" style="margin-bottom:0.75rem;">Reset to Defaults</button>
-                <button class="action-btn danger" id="clearBtn">Clear All Settings</button>
+                <button class="action-btn danger" id="turnOffBtn">TURN OFF MAINTENANCE NOW</button>
             </div>
         </div>
     </div>
 
-    <div class="saved-toast" id="savedToast">&#10003; Settings Saved</div>
+    <div class="saved-toast" id="savedToast">Settings Saved</div>
 
     <script>
         const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        const ADMIN_PASSWORD = 'Knight@123';
 
-        // Admin auth (memory only, not localStorage)
         let __adminAuth = false;
 
         async function apiGet(path) {
@@ -684,20 +520,13 @@
             if (!res.ok) throw new Error('API error: ' + res.status);
             return await res.json();
         }
-        
-        // ==================== AUTH ====================
-        const ADMIN_PASSWORD = 'Knight@123'; // Change this!
-        // Auth (memory only - no localStorage)
-        let __adminAuthenticated = false;
 
-        function isAuthenticated() {
-            return __adminAuthenticated;
-        }
+        function isAuthenticated() { return __adminAuth; }
 
         function login() {
             const pw = document.getElementById('adminPassword').value;
             if (pw === ADMIN_PASSWORD) {
-                __adminAuthenticated = true;
+                __adminAuth = true;
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('dashboard').classList.add('active');
                 document.getElementById('loginError').classList.remove('show');
@@ -709,7 +538,7 @@
         }
 
         function logout() {
-            __adminAuthenticated = false;
+            __adminAuth = false;
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('dashboard').classList.remove('active');
             document.getElementById('adminPassword').value = '';
@@ -721,11 +550,8 @@
         });
         document.getElementById('logoutBtn').addEventListener('click', logout);
 
-        // ==================== SETTINGS STORAGE ====================
-        const SETTINGS_KEY = 'night_maintenance_settings';
-
         const defaults = {
-            maintenanceMode: true,
+            maintenanceMode: false,
             audioEnabled: true,
             animationEnabled: true,
             waitMinutes: 30,
@@ -735,72 +561,10 @@
             lastUpdated: Date.now()
         };
 
-        async function getSettings() {
-            try {
-                return await apiGet('/maintenance');
-            } catch(e) { 
-                console.warn('API unreachable, using defaults');
-                return { ...defaults }; 
-            }
-        }
-
-        async function saveSettings(settings) {
-            try {
-                console.log('POSTing to /maintenance:', settings);
-                const result = await apiPost('/maintenance', settings);
-                console.log('Save response:', result);
-                showToast();
-            } catch(e) {
-                console.error('Failed to save:', e);
-                alert('Failed to save settings. Check your connection.');
-            }
-        }
-
         function showToast() {
             const toast = document.getElementById('savedToast');
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2500);
-        }
-
-        async function loadSettings() {
-            let s;
-            try {
-                s = await apiGet('/maintenance');
-                console.log('Loaded settings from API:', s);
-            } catch(err) {
-                console.warn('API failed, using defaults');
-                s = { ...defaults };
-            }
-
-            document.getElementById('maintenanceToggle').checked = s.maintenanceMode || false;
-            document.getElementById('audioToggle').checked = s.audioEnabled !== false;
-            document.getElementById('animationToggle').checked = s.animationEnabled !== false;
-            document.getElementById('headlineInput').value = s.headline;
-            document.getElementById('messageInput').value = s.message;
-            document.getElementById('emailInput').value = s.contactEmail;
-
-            // Set wait time dropdown
-            const presets = ['15','30','60','120','240','480','1440'];
-            if (presets.includes(String(s.waitMinutes))) {
-                document.getElementById('waitPreset').value = String(s.waitMinutes);
-                document.getElementById('customTimeGroup').style.display = 'none';
-            } else {
-                document.getElementById('waitPreset').value = 'custom';
-                document.getElementById('customTimeGroup').style.display = 'block';
-                document.getElementById('customMinutes').value = s.waitMinutes;
-            }
-
-            updateTimeDisplay(s.waitMinutes);
-            updateStatusUI(s.maintenanceMode);
-            updatePreview();
-        }
-
-        function updateTimeDisplay(minutes) {
-            const h = Math.floor(minutes / 60);
-            const m = minutes % 60;
-            document.getElementById('hoursVal').textContent = String(h).padStart(2, '0');
-            document.getElementById('minutesVal').textContent = String(m).padStart(2, '0');
-            document.getElementById('secondsVal').textContent = '00';
         }
 
         function updateStatusUI(isMaintenance) {
@@ -821,22 +585,31 @@
             }
         }
 
-        function updatePreview() {
-            document.getElementById('previewHeadline').textContent = document.getElementById('headlineInput').value || "We'll Be Right Back";
-            document.getElementById('previewMessage').textContent = document.getElementById('messageInput').value || defaults.message;
-            document.getElementById('previewEmail').textContent = document.getElementById('emailInput').value || defaults.contactEmail;
+        async function loadSettings() {
+            let s;
+            try {
+                s = await apiGet('/maintenance');
+                console.log('Loaded settings:', s);
+            } catch(err) {
+                console.warn('API failed, using defaults');
+                s = { ...defaults };
+            }
+
+            document.getElementById('maintenanceToggle').checked = s.maintenanceMode || false;
+            document.getElementById('audioToggle').checked = s.audioEnabled !== false;
+            document.getElementById('animationToggle').checked = s.animationEnabled !== false;
+            document.getElementById('headlineInput').value = s.headline || defaults.headline;
+            document.getElementById('messageInput').value = s.message || defaults.message;
+            document.getElementById('emailInput').value = s.contactEmail || defaults.contactEmail;
+
+            updateStatusUI(s.maintenanceMode);
         }
 
-        // ==================== EVENT LISTENERS ====================
-
         // Maintenance toggle
-        // Maintenance toggle
-        const maintToggle = document.getElementById('maintenanceToggle');
-        maintToggle.addEventListener('change', async (e) => {
+        document.getElementById('maintenanceToggle').addEventListener('change', async (e) => {
             const isOn = e.target.checked;
-            console.log('Maintenance toggle changed to:', isOn);
+            console.log('Toggle changed to:', isOn);
 
-            // Get current settings from API
             let s;
             try {
                 s = await apiGet('/maintenance');
@@ -844,23 +617,18 @@
                 s = { ...defaults };
             }
 
-            // Update maintenance mode
             s.maintenanceMode = isOn;
             s.lastUpdated = Date.now();
 
-            // Update UI
             updateStatusUI(isOn);
 
-            // Save to API
             try {
-                console.log('Saving maintenance mode:', isOn);
-                const result = await apiPost('/maintenance', s);
-                console.log('Save successful:', result);
+                await apiPost('/maintenance', s);
+                console.log('Saved successfully');
                 showToast();
             } catch(err) {
                 console.error('Save failed:', err);
                 alert('Failed to save: ' + err.message);
-                // Revert toggle if save failed
                 e.target.checked = !isOn;
                 updateStatusUI(!isOn);
             }
@@ -868,101 +636,68 @@
 
         // Audio toggle
         document.getElementById('audioToggle').addEventListener('change', async (e) => {
-            const s = await getSettings();
+            let s;
+            try { s = await apiGet('/maintenance'); } catch(err) { s = { ...defaults }; }
             s.audioEnabled = e.target.checked;
-            await saveSettings(s);
+            try { await apiPost('/maintenance', s); showToast(); } catch(err) { alert('Failed to save'); }
         });
 
         // Animation toggle
         document.getElementById('animationToggle').addEventListener('change', async (e) => {
-            const s = await getSettings();
+            let s;
+            try { s = await apiGet('/maintenance'); } catch(err) { s = { ...defaults }; }
             s.animationEnabled = e.target.checked;
-            await saveSettings(s);
+            try { await apiPost('/maintenance', s); showToast(); } catch(err) { alert('Failed to save'); }
         });
 
-        // Wait preset
-        document.getElementById('waitPreset').addEventListener('change', (e) => {
-            if (e.target.value === 'custom') {
-                document.getElementById('customTimeGroup').style.display = 'block';
-            } else {
-                document.getElementById('customTimeGroup').style.display = 'none';
-                updateTimeDisplay(parseInt(e.target.value));
-            }
-        });
-
-        // Custom minutes input
-        document.getElementById('customMinutes').addEventListener('input', (e) => {
-            const val = parseInt(e.target.value) || 0;
-            updateTimeDisplay(val);
-        });
-
-        // Set time button
+        // Set time
         document.getElementById('setTimeBtn').addEventListener('click', async () => {
             const preset = document.getElementById('waitPreset').value;
-            let minutes;
-            if (preset === 'custom') {
-                minutes = parseInt(document.getElementById('customMinutes').value) || 30;
-            } else {
-                minutes = parseInt(preset);
-            }
-            const s = await getSettings();
+            const minutes = parseInt(preset) || 30;
+            let s;
+            try { s = await apiGet('/maintenance'); } catch(err) { s = { ...defaults }; }
             s.waitMinutes = minutes;
-            await saveSettings(s);
-
-            const eta = new Date(Date.now() + minutes * 60000);
-            document.getElementById('etaValue').textContent = eta.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        });
-
-        // Message inputs
-        ['headlineInput', 'messageInput', 'emailInput'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updatePreview);
+            try { await apiPost('/maintenance', s); showToast(); } catch(err) { alert('Failed to save'); }
         });
 
         // Save message
         document.getElementById('saveMessageBtn').addEventListener('click', async () => {
-            const s = await getSettings();
+            let s;
+            try { s = await apiGet('/maintenance'); } catch(err) { s = { ...defaults }; }
             s.headline = document.getElementById('headlineInput').value || defaults.headline;
             s.message = document.getElementById('messageInput').value || defaults.message;
             s.contactEmail = document.getElementById('emailInput').value || defaults.contactEmail;
-            await saveSettings(s);
+            try { await apiPost('/maintenance', s); showToast(); } catch(err) { alert('Failed to save'); }
         });
 
         // Reset defaults
         document.getElementById('resetBtn').addEventListener('click', async () => {
             if (confirm('Reset all settings to defaults?')) {
-                await apiPost('/maintenance', { ...defaults });
-                await loadSettings();
-                showToast();
+                try {
+                    await apiPost('/maintenance', { ...defaults });
+                    await loadSettings();
+                    showToast();
+                } catch(err) { alert('Failed to reset'); }
             }
         });
 
-        // Clear all
-        document.getElementById('clearBtn').addEventListener('click', async () => {
-            if (confirm('Clear ALL settings? This cannot be undone.')) {
-                await apiPost('/maintenance', { ...defaults });
-                await loadSettings();
-                showToast();
+        // EMERGENCY TURN OFF
+        document.getElementById('turnOffBtn').addEventListener('click', async () => {
+            if (confirm('Turn OFF maintenance mode immediately?')) {
+                try {
+                    let s = await apiGet('/maintenance');
+                    s.maintenanceMode = false;
+                    s.lastUpdated = Date.now();
+                    await apiPost('/maintenance', s);
+                    document.getElementById('maintenanceToggle').checked = false;
+                    updateStatusUI(false);
+                    showToast();
+                    alert('Maintenance mode is now OFF');
+                } catch(err) {
+                    alert('Failed: ' + err.message);
+                }
             }
         });
-
-        // Init
-        loadSettings();
-
-        // Update ETA display
-        (async function() {
-            const s = await getSettings();
-            if (s.waitMinutes) {
-                const eta = new Date(Date.now() + s.waitMinutes * 60000);
-                document.getElementById('etaValue').textContent = eta.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            }
-        })();
-
-        // Update ETA display
-        const s = getSettings();
-        if (s.waitMinutes) {
-            const eta = new Date(Date.now() + s.waitMinutes * 60000);
-            document.getElementById('etaValue').textContent = eta.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }
     </script>
 </body>
 </html>
