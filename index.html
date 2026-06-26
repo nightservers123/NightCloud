@@ -578,8 +578,21 @@
 <base target="_blank">
 </head>
 <body>
-    <!-- MAINTENANCE OVERLAY -->
-    <div id="maintenanceOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:99999; font-family:'Inter',sans-serif; overflow:hidden;">
+    <!-- MAINTENANCE SYSTEM -->
+
+    <!-- STEP 1: POPUP (users must click Continue to proceed) -->
+    <div id="maintPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:99999; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:rgba(10,10,20,0.95); border:1px solid rgba(99,102,241,0.2); border-radius:24px; padding:2.5rem; max-width:420px; width:100%; text-align:center; box-shadow:0 0 60px rgba(99,102,241,0.15);">
+            <div style="font-size:2.5rem; margin-bottom:1rem;">🔧</div>
+            <h2 style="font-size:1.4rem; font-weight:700; color:#f1f1f6; margin-bottom:0.5rem;">We're Down for Maintenance</h2>
+            <p style="font-size:0.9rem; color:#8b8b9a; line-height:1.6; margin-bottom:2rem;">Night Net is currently undergoing scheduled maintenance. Press continue to view the status page with ambient audio.</p>
+            <button id="maintContinueBtn" style="background:linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none; color:#fff; padding:14px 40px; border-radius:50px; font-size:1rem; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:100%; box-shadow:0 4px 20px rgba(99,102,241,0.3); transition:all 0.3s;">Continue</button>
+            <p style="font-size:0.75rem; color:#4a4a5e; margin-top:1rem;">Estimated return: <span id="popupEta">30 minutes</span></p>
+        </div>
+    </div>
+
+    <!-- STEP 2: FULL MAINTENANCE SCREEN (shown after popup) -->
+    <div id="maintenanceOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:99998; font-family:'Inter',sans-serif; overflow:hidden;">
         <canvas id="maintCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
         <div style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:1.5rem;">
             <div style="font-size:clamp(2.5rem, 10vw, 4rem); font-weight:900; letter-spacing:-3px; background:linear-gradient(135deg, #6366f1 0%, #a855f7 30%, #ec4899 60%, #f97316 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.5rem;">Night</div>
@@ -610,7 +623,7 @@
                 <div style="position:absolute; top:0; left:0; height:100%; width:40%; background:linear-gradient(90deg, #6366f1, #a855f7, #ec4899); border-radius:3px; animation:progressMove 3s ease-in-out infinite; box-shadow:0 0 10px rgba(99,102,241,0.4);"></div>
             </div>
             <p style="font-size:0.8rem; color:#5a5a6e;">Need help? <a id="maintEmail" href="mailto:NightIndustriesservers@gmail.com" style="color:#6366f1; text-decoration:none; font-weight:600;">Email us</a></p>
-            <button id="maintAudioBtn" style="margin-top:1.5rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); color:#6366f1; padding:8px 16px; border-radius:50px; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;">🎵 Play Ambient Music</button>
+            <div id="audioStatus" style="margin-top:1.5rem; font-size:0.75rem; color:#a855f7; display:none;">🔊 Ambient music playing</div>
         </div>
     </div>
     <style>@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }</style>
@@ -1935,39 +1948,65 @@
     <script>
     (function() {
         const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        let __maintSettings = null;
+        let __audioCtx = null;
+        let __audioPlaying = false;
+        let __audioTimeouts = [];
+        let __audioNodes = [];
 
         // Check maintenance on load
-        fetch(API_URL + '/maintenance?t=' + Date.now())
-            .then(r => r.json())
-            .then(settings => {
-                const isAdmin = new URLSearchParams(location.search).get('admin') === 'true';
-                if (settings.maintenanceMode && !isAdmin) showMaint(settings);
-            })
-            .catch(err => console.log('Maint check:', err));
+        const isAdmin = new URLSearchParams(location.search).get('admin') === 'true';
 
-        // Poll for changes every 5s
-        setInterval(() => {
+        function checkMaintenance() {
+            // Check localStorage first
+            const localMaint = localStorage.getItem('night_maintenance_mode');
+            if (localMaint === 'true' && !isAdmin) {
+                const settings = JSON.parse(localStorage.getItem('night_maintenance_settings') || '{}');
+                showPopup(settings);
+                return;
+            }
+
+            // Try API
             fetch(API_URL + '/maintenance?t=' + Date.now())
-                .then(r => r.json())
-                .then(s => {
-                    const overlay = document.getElementById('maintenanceOverlay');
-                    if (!s.maintenanceMode && overlay && overlay.style.display === 'block') {
-                        location.reload(true);
+                .then(r => {
+                    if (!r.ok) return null;
+                    return r.json();
+                })
+                .then(settings => {
+                    if (settings && settings.maintenanceMode && !isAdmin) {
+                        showPopup(settings);
                     }
                 })
-                .catch(() => {});
-        }, 5000);
+                .catch(err => console.log('Maint check failed:', err));
+        }
 
-        function showMaint(settings) {
-            const el = document.getElementById('maintenanceOverlay');
-            if (!el) return;
-            el.style.display = 'block';
-            document.body.style.overflow = 'hidden';
+        function showPopup(settings) {
+            __maintSettings = settings;
+            const popup = document.getElementById('maintPopup');
+            const eta = settings.waitMinutes || 30;
+            document.getElementById('popupEta').textContent = eta + ' minutes';
+            if (popup) {
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
 
+        function showMaintScreen() {
+            const popup = document.getElementById('maintPopup');
+            const overlay = document.getElementById('maintenanceOverlay');
+
+            if (popup) popup.style.display = 'none';
+            if (overlay) {
+                overlay.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            const settings = __maintSettings || {};
             document.getElementById('maintHeadline').textContent = settings.headline || "We'll Be Right Back";
             document.getElementById('maintMessage').textContent = settings.message || 'Night Net is currently undergoing scheduled maintenance.';
             document.getElementById('maintEmail').href = 'mailto:' + (settings.contactEmail || 'NightIndustriesservers@gmail.com');
 
+            // Countdown
             const endTime = (settings.lastUpdated || Date.now()) + ((settings.waitMinutes || 30) * 60000);
             const iv = setInterval(() => {
                 const diff = Math.max(0, endTime - Date.now());
@@ -1983,6 +2022,7 @@
                 if (diff <= 0) clearInterval(iv);
             }, 1000);
 
+            // Starfield
             const c = document.getElementById('maintCanvas');
             if (c) {
                 const ctx = c.getContext('2d');
@@ -2005,75 +2045,107 @@
                 }
                 anim();
             }
+
+            // AUTO-PLAY ambient music when screen shows (user already clicked Continue)
+            startAmbientMusic();
         }
 
-        // No dismiss function - maintenance screen blocks all access until admin turns it off
+        // Continue button - user clicks this to proceed to maintenance screen + triggers audio
+        document.getElementById('maintContinueBtn').addEventListener('click', function() {
+            showMaintScreen();
+        });
 
-        // Audio
-        let audioCtx, audioPlaying = false, timeouts = [], nodes = [];
-        document.getElementById('maintAudioBtn').addEventListener('click', function() {
-            if (audioPlaying) { stopAudio(); return; }
+        function startAmbientMusic() {
+            if (__audioPlaying) return;
             try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            } catch(e) { return; }
+                __audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (__audioCtx.state === 'suspended') {
+                    __audioCtx.resume();
+                }
+            } catch(e) {
+                console.log('Web Audio not supported');
+                return;
+            }
 
-            const master = audioCtx.createGain();
-            master.gain.value = 0.3;
-            master.connect(audioCtx.destination);
-            nodes.push(master);
+            const master = __audioCtx.createGain();
+            master.gain.value = 0.25;
+            master.connect(__audioCtx.destination);
+            __audioNodes.push(master);
 
+            // Chord drone
             const chords = [[261.63, 329.63, 392.00], [220.00, 277.18, 329.63], [174.61, 220.00, 261.63], [196.00, 246.94, 293.66]];
             let ci = 0;
             function playChord() {
-                if (!audioPlaying) return;
-                const t = audioCtx.currentTime;
+                if (!__audioPlaying) return;
+                const t = __audioCtx.currentTime;
                 chords[ci % chords.length].forEach(f => {
-                    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-                    const g = audioCtx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.04, t + 2); g.gain.linearRampToValueAtTime(0, t + 6);
+                    const o = __audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+                    const g = __audioCtx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.04, t + 2); g.gain.linearRampToValueAtTime(0, t + 6);
                     o.connect(g); g.connect(master); o.start(t); o.stop(t + 7);
                 });
                 ci++;
-                timeouts.push(setTimeout(playChord, 5000));
+                __audioTimeouts.push(setTimeout(playChord, 5000));
             }
             playChord();
 
+            // Twinkles
             function playTwinkle() {
-                if (!audioPlaying) return;
-                const t = audioCtx.currentTime;
+                if (!__audioPlaying) return;
+                const t = __audioCtx.currentTime;
                 const f = [523.25, 659.25, 783.99, 1046.50][Math.floor(Math.random() * 4)];
-                const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-                const g = audioCtx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.03, t + 0.2); g.gain.exponentialRampToValueAtTime(0.001, t + 2);
+                const o = __audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+                const g = __audioCtx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.03, t + 0.2); g.gain.exponentialRampToValueAtTime(0.001, t + 2);
                 o.connect(g); g.connect(master); o.start(t); o.stop(t + 2.5);
-                timeouts.push(setTimeout(playTwinkle, 1500 + Math.random() * 3000));
+                __audioTimeouts.push(setTimeout(playTwinkle, 1500 + Math.random() * 3000));
             }
             playTwinkle();
 
+            // Bass
             function playBass() {
-                if (!audioPlaying) return;
-                const t = audioCtx.currentTime;
-                const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = 65.41;
-                const g = audioCtx.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 1);
+                if (!__audioPlaying) return;
+                const t = __audioCtx.currentTime;
+                const o = __audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = 65.41;
+                const g = __audioCtx.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 1);
                 o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.2);
-                timeouts.push(setTimeout(playBass, 3000 + Math.random() * 2000));
+                __audioTimeouts.push(setTimeout(playBass, 3000 + Math.random() * 2000));
             }
             playBass();
 
-            audioPlaying = true;
-            this.textContent = '🔇 Mute Music';
-            this.style.borderColor = 'rgba(168,85,247,0.6)';
-            this.style.background = 'rgba(168,85,247,0.15)';
-            this.style.color = '#a855f7';
-        });
-
-        function stopAudio() {
-            timeouts.forEach(clearTimeout); timeouts = [];
-            nodes.forEach(n => { try { n.disconnect(); } catch(e) {} });
-            if (audioCtx) { try { audioCtx.close(); } catch(e) {} }
-            audioCtx = null; nodes = []; audioPlaying = false;
-            const btn = document.getElementById('maintAudioBtn');
-            if (btn) { btn.textContent = '🎵 Play Ambient Music'; btn.style.borderColor = 'rgba(99,102,241,0.3)'; btn.style.background = 'rgba(99,102,241,0.1)'; btn.style.color = '#6366f1'; }
+            __audioPlaying = true;
+            const status = document.getElementById('audioStatus');
+            if (status) status.style.display = 'block';
         }
+
+        function stopAmbientMusic() {
+            __audioTimeouts.forEach(clearTimeout); __audioTimeouts = [];
+            __audioNodes.forEach(n => { try { n.disconnect(); } catch(e) {} });
+            if (__audioCtx) { try { __audioCtx.close(); } catch(e) {} }
+            __audioCtx = null; __audioNodes = []; __audioPlaying = false;
+            const status = document.getElementById('audioStatus');
+            if (status) status.style.display = 'none';
+        }
+
+        // Poll for changes
+        setInterval(() => {
+            const localMaint = localStorage.getItem('night_maintenance_mode');
+            const overlay = document.getElementById('maintenanceOverlay');
+            if (localMaint !== 'true' && overlay && overlay.style.display === 'block') {
+                location.reload(true);
+                return;
+            }
+            fetch(API_URL + '/maintenance?t=' + Date.now())
+                .then(r => { if (!r.ok) return null; return r.json(); })
+                .then(s => {
+                    if (!s) return;
+                    if (!s.maintenanceMode && overlay && overlay.style.display === 'block') {
+                        location.reload(true);
+                    }
+                })
+                .catch(() => {});
+        }, 5000);
+
+        // Run check on load
+        checkMaintenance();
     })();
     </script>
 </body>
