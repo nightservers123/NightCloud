@@ -2,88 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
     <title>Night Net — Maintenance</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
             font-family: 'Inter', sans-serif;
             background: #000;
             color: #e0e0e5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            height: 100%;
+            width: 100%;
             overflow: hidden;
-            position: relative;
+            position: fixed;
+            touch-action: none;
+            -webkit-font-smoothing: antialiased;
         }
-        .starfield {
+        
+        /* Canvas starfield - GPU accelerated */
+        #starCanvas {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 0;
-            perspective: 500px;
-            overflow: hidden;
         }
-        .star-warp {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 2px; height: 2px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 4px rgba(255,255,255,0.8);
-            transform-style: preserve-3d;
-            will-change: transform, opacity, width, height;
-        }
-        .streak {
-            position: absolute;
-            top: 50%; left: 50%;
-            height: 2px;
-            border-radius: 1px;
-            transform-origin: left center;
-            transform-style: preserve-3d;
-            opacity: 0.8;
-            will-change: transform, opacity, width;
-        }
-        .streak-purple { background: linear-gradient(90deg, transparent, #a855f7, #6366f1); box-shadow: 0 0 6px rgba(168,85,247,0.6); }
-        .streak-pink { background: linear-gradient(90deg, transparent, #ec4899, #f472b6); box-shadow: 0 0 6px rgba(236,72,153,0.6); }
-        .streak-orange { background: linear-gradient(90deg, transparent, #f97316, #fb923c); box-shadow: 0 0 6px rgba(249,115,22,0.6); }
-        .streak-white { background: linear-gradient(90deg, transparent, #fff, rgba(255,255,255,0.5)); box-shadow: 0 0 4px rgba(255,255,255,0.5); }
-        .vortex-container {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            animation: vortex-rotate 60s linear infinite;
-        }
-        @keyframes vortex-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
         .glow-orb {
-            position: absolute;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, rgba(168,85,247,0.08) 30%, transparent 70%);
+            position: fixed;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.08) 30%, transparent 70%);
             border-radius: 50%;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 0;
             animation: pulse 4s infinite ease-in-out;
+            pointer-events: none;
         }
         @keyframes pulse { 0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.5; } 50% { transform: translate(-50%,-50%) scale(1.3); opacity: 0.8; } }
+        
         .container {
-            position: relative;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            max-width: 600px;
-            padding: 2rem;
+            padding: 1.5rem;
             animation: float 6s ease-in-out infinite;
         }
-        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+        
         .logo {
-            font-size: 3.5rem;
+            font-size: clamp(2.5rem, 10vw, 3.5rem);
             font-weight: 900;
             letter-spacing: -2px;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -91,110 +68,144 @@
             animation: shimmer 3s infinite;
         }
         @keyframes shimmer { 0% { filter: brightness(1); } 50% { filter: brightness(1.3); } 100% { filter: brightness(1); } }
+        
         .subtitle {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #6366f1;
             font-weight: 600;
             letter-spacing: 4px;
             text-transform: uppercase;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             opacity: 0.8;
         }
-        .maintenance-icon { width: 80px; height: 80px; margin: 0 auto 2rem; position: relative; }
-        .gear { position: absolute; color: #6366f1; animation: spin 8s linear infinite; }
-        .gear-large { font-size: 3.5rem; top: 10px; left: 10px; }
-        .gear-small { font-size: 2rem; top: 35px; left: 45px; animation-direction: reverse; color: #a855f7; }
+        
+        .maintenance-icon { 
+            width: 60px; 
+            height: 60px; 
+            margin: 0 auto 1.5rem; 
+            position: relative; 
+        }
+        .gear { 
+            position: absolute; 
+            color: #6366f1; 
+            animation: spin 8s linear infinite; 
+        }
+        .gear-large { font-size: 2.5rem; top: 5px; left: 5px; }
+        .gear-small { font-size: 1.5rem; top: 25px; left: 35px; animation-direction: reverse; color: #a855f7; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: rgba(239,68,68,0.1);
             border: 1px solid rgba(239,68,68,0.3);
             color: #ef4444;
-            padding: 8px 20px;
+            padding: 6px 16px;
             border-radius: 50px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .status-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: blink 1.5s infinite; }
+        .status-dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: blink 1.5s infinite; }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-        h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #f1f1f6; }
-        .message { font-size: 1.1rem; color: #8b8b9a; line-height: 1.7; margin-bottom: 2.5rem; }
+        
+        h1 { 
+            font-size: clamp(1.3rem, 5vw, 2rem); 
+            font-weight: 700; 
+            margin-bottom: 0.75rem; 
+            color: #f1f1f6; 
+        }
+        
+        .message { 
+            font-size: clamp(0.9rem, 3.5vw, 1.1rem); 
+            color: #8b8b9a; 
+            line-height: 1.6; 
+            margin-bottom: 2rem; 
+            max-width: 90%;
+        }
         .message strong { color: #c7c7d1; }
-        .contact { font-size: 0.9rem; color: #5a5a6e; }
-        .contact a { color: #6366f1; text-decoration: none; font-weight: 600; transition: color 0.2s; }
-        .contact a:hover { color: #a855f7; }
-        .footer { position: fixed; bottom: 2rem; left: 0; right: 0; text-align: center; font-size: 0.75rem; color: #3a3a4e; z-index: 1; }
+        
+        .contact { 
+            font-size: 0.8rem; 
+            color: #5a5a6e; 
+        }
+        .contact a { 
+            color: #6366f1; 
+            text-decoration: none; 
+            font-weight: 600; 
+        }
+        
+        .footer { 
+            position: fixed; 
+            bottom: 1rem; 
+            left: 0; 
+            right: 0; 
+            text-align: center; 
+            font-size: 0.7rem; 
+            color: #3a3a4e; 
+            z-index: 1; 
+        }
         .footer span { color: #6366f1; }
 
-        /* Popup */
+        /* Popup - mobile safe */
         .popup-overlay {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(8px);
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            -webkit-backdrop-filter: blur(8px);
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            padding: 1rem;
         }
         .popup-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .popup-box {
             background: rgba(10,10,20,0.95);
             border: 1px solid rgba(99,102,241,0.3);
-            border-radius: 20px;
-            padding: 2.5rem 3rem;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
             text-align: center;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 0 40px rgba(99,102,241,0.15);
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 0 30px rgba(99,102,241,0.15);
         }
-        .popup-box h2 { font-size: 1.5rem; color: #f1f1f6; margin-bottom: 0.5rem; font-weight: 700; }
-        .popup-box p { color: #8b8b9a; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
+        .popup-box h2 { font-size: 1.3rem; color: #f1f1f6; margin-bottom: 0.5rem; font-weight: 700; }
+        .popup-box p { color: #8b8b9a; font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.5; }
         .popup-btn {
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             color: #fff;
             border: none;
-            padding: 12px 32px;
+            padding: 12px 28px;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.2s, box-shadow 0.2s;
             font-family: 'Inter', sans-serif;
+            width: 100%;
+            -webkit-appearance: none;
         }
-        .popup-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
-        .popup-btn:active { transform: translateY(0); }
-
-        @media (max-width: 480px) {
-            .logo { font-size: 2.5rem; }
-            h1 { font-size: 1.5rem; }
-            .message { font-size: 1rem; }
-            .popup-box { padding: 2rem 1.5rem; }
-            .popup-box h2 { font-size: 1.25rem; }
-        }
+        .popup-btn:active { transform: scale(0.97); }
     </style>
-<base target="_blank">
 </head>
 <body>
     <div class="popup-overlay" id="popupOverlay">
         <div class="popup-box">
             <h2>Night Net Maintenance</h2>
-            <p>This page features ambient audio. Click below to continue.</p>
-            <button class="popup-btn" onclick="dismissPopup()">Continue</button>
+            <p>This page features ambient audio. Tap below to continue.</p>
+            <button class="popup-btn" id="popupBtn">Continue</button>
         </div>
     </div>
 
-    <div class="starfield" id="starfield">
-        <div class="vortex-container" id="vortex"></div>
-        <div class="glow-orb"></div>
-    </div>
+    <canvas id="starCanvas"></canvas>
+    <div class="glow-orb"></div>
 
     <div class="container">
         <div class="logo">Night</div>
@@ -213,7 +224,7 @@
             We're working hard to get everything back online <strong>as soon as possible</strong>.
         </p>
         <p class="contact">
-            Need help? Contact us at <a href="mailto:NightIndustriesservers@gmail.com">NightIndustriesservers@gmail.com</a>
+            Need help? <a href="mailto:NightIndustriesservers@gmail.com">Email us</a>
         </p>
     </div>
 
@@ -222,483 +233,238 @@
     </div>
 
     <script>
-        // ============================================
-        // ZERO-CLICK DEEP AMBIENT MUSIC
-        // No popping, no exponential ramps, smooth linear fades only
-        // ============================================
-
+        // ==================== MOBILE AUDIO ====================
         let audioCtx = null;
         let musicPlaying = false;
-        let currentChord = 0;
         let masterGain = null;
-        let chordNodes = [];
-        let noiseNode = null;
-        let noiseGain = null;
 
         const chordSets = [
-            [27.50, 32.70, 41.20, 55.00, 65.41, 82.41, 110.00, 130.81],
-            [32.70, 41.20, 49.00, 65.41, 82.41, 98.00, 130.81, 164.81],
-            [41.20, 49.00, 61.74, 82.41, 98.00, 123.47, 164.81, 196.00],
-            [43.65, 55.00, 65.41, 87.31, 110.00, 130.81, 174.61, 220.00],
-            [36.71, 43.65, 55.00, 73.42, 87.31, 110.00, 146.83, 174.61],
-            [49.00, 61.74, 73.42, 98.00, 123.47, 146.83, 196.00, 246.94]
+            [27.50, 32.70, 41.20, 55.00, 65.41, 82.41],
+            [32.70, 41.20, 49.00, 65.41, 82.41, 98.00],
+            [41.20, 49.00, 61.74, 82.41, 98.00, 123.47],
+            [43.65, 55.00, 65.41, 87.31, 110.00, 130.81],
+            [36.71, 43.65, 55.00, 73.42, 87.31, 110.00],
+            [49.00, 61.74, 73.42, 98.00, 123.47, 146.83]
         ];
+
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
 
         function startMusic() {
             if (musicPlaying) return;
-
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const now = audioCtx.currentTime;
-
-                // De-click filter on master
-                const declick = audioCtx.createBiquadFilter();
-                declick.type = 'lowpass';
-                declick.frequency.value = 20000;
-                declick.Q.value = 0.1;
-
-                // Master gain - start at 0 and ramp up
+                
                 masterGain = audioCtx.createGain();
                 masterGain.gain.setValueAtTime(0.0001, now);
-                masterGain.gain.linearRampToValueAtTime(0.95, now + 3.0);
-
-                // Lowpass for deep bass only
+                masterGain.gain.linearRampToValueAtTime(isMobile() ? 0.5 : 0.8, now + 2.0);
+                
                 const lowpass = audioCtx.createBiquadFilter();
                 lowpass.type = 'lowpass';
-                lowpass.frequency.value = 250;
-                lowpass.Q.value = 0.5;
-
-                // Highpass remove sub-sonic
-                const highpass = audioCtx.createBiquadFilter();
-                highpass.type = 'highpass';
-                highpass.frequency.value = 20;
-                highpass.Q.value = 0.5;
-
-                // Compressor
+                lowpass.frequency.value = 200;
+                
                 const compressor = audioCtx.createDynamicsCompressor();
-                compressor.threshold.value = -8;
-                compressor.knee.value = 2;
-                compressor.ratio.value = 12;
-                compressor.attack.value = 0.05;
-                compressor.release.value = 0.5;
-
-                // Limiter
-                const limiter = audioCtx.createDynamicsCompressor();
-                limiter.threshold.value = -1;
-                limiter.knee.value = 0;
-                limiter.ratio.value = 20;
-                limiter.attack.value = 0.005;
-                limiter.release.value = 0.1;
-
-                // Reverb
-                const reverb = audioCtx.createConvolver();
-                const reverbTime = 8.0;
-                const sampleRate = audioCtx.sampleRate;
-                const length = sampleRate * reverbTime;
-                const impulse = audioCtx.createBuffer(2, length, sampleRate);
-                for (let channel = 0; channel < 2; channel++) {
-                    const channelData = impulse.getChannelData(channel);
-                    for (let i = 0; i < length; i++) {
-                        const decay = Math.pow(1 - i / length, 1.0);
-                        channelData[i] = (Math.random() * 2 - 1) * decay * 1.0;
-                    }
-                }
-                reverb.buffer = impulse;
-                const reverbGain = audioCtx.createGain();
-                reverbGain.gain.value = 0.8;
-
-                // Delay
-                const delay = audioCtx.createDelay(10.0);
-                delay.delayTime.value = 2.0;
-                const delayGain = audioCtx.createGain();
-                delayGain.gain.value = 0.7;
-
-                // Chain
-                masterGain.connect(declick);
-                declick.connect(lowpass);
-                lowpass.connect(highpass);
-                highpass.connect(compressor);
-                compressor.connect(limiter);
-                limiter.connect(audioCtx.destination);
-
-                masterGain.connect(reverb);
-                reverb.connect(reverbGain);
-                reverbGain.connect(audioCtx.destination);
-
-                masterGain.connect(delay);
-                delay.connect(delayGain);
-                delayGain.connect(delay);
-                delayGain.connect(audioCtx.destination);
-
-                // Start first chord
+                compressor.threshold.value = -10;
+                compressor.ratio.value = 8;
+                
+                masterGain.connect(lowpass);
+                lowpass.connect(compressor);
+                compressor.connect(audioCtx.destination);
+                
                 playChord(0, now);
                 musicPlaying = true;
-
-                // Schedule chord changes
-                scheduleChordChange(now + 30);
-
-                // Start noise texture
-                startNoise(now);
-
-                // Start pulses
-                schedulePulse(now + 4);
-
-                // Start arpeggios
-                scheduleArpeggio(now + 15);
-
-            } catch (e) {
-                console.log('Audio error:', e);
-            }
+                scheduleChordChange(now + 20);
+                
+            } catch(e) { console.log('Audio init failed:', e); }
         }
 
-        function playChord(chordIndex, startTime) {
+        let activeOscs = [];
+        function playChord(idx, time) {
             if (!audioCtx) return;
-
-            const chord = chordSets[chordIndex];
-            const fadeIn = 4.0;
-            const fadeOut = 6.0;
-
-            // Fade out old chord nodes
-            chordNodes.forEach(node => {
-                if (node.gain) {
-                    const current = node.gain.gain.value;
-                    node.gain.gain.cancelScheduledValues(startTime);
-                    node.gain.gain.setValueAtTime(current, startTime);
-                    node.gain.gain.linearRampToValueAtTime(0.0001, startTime + fadeOut);
-                }
+            
+            // Fade out old
+            activeOscs.forEach(o => {
+                try {
+                    o.gain.gain.cancelScheduledValues(time);
+                    o.gain.gain.setValueAtTime(o.gain.gain.value, time);
+                    o.gain.gain.linearRampToValueAtTime(0.0001, time + 3);
+                    setTimeout(() => { try { o.osc.stop(); } catch(e){} }, 3500);
+                } catch(e) {}
             });
-
-            // Create new chord nodes
-            const newNodes = [];
-            chord.forEach((freq) => {
-                // Main osc
+            activeOscs = [];
+            
+            const chord = chordSets[idx];
+            chord.forEach(freq => {
                 const osc = audioCtx.createOscillator();
                 osc.type = 'sine';
                 osc.frequency.value = freq;
-
-                const osc2 = audioCtx.createOscillator();
-                osc2.type = 'sine';
-                osc2.frequency.value = freq * 1.002;
-
-                const osc3 = audioCtx.createOscillator();
-                osc3.type = 'sine';
-                osc3.frequency.value = freq * 0.5;
-
-                const osc4 = audioCtx.createOscillator();
-                osc4.type = 'sine';
-                osc4.frequency.value = freq * 0.25;
-
-                const osc5 = audioCtx.createOscillator();
-                osc5.type = 'sine';
-                osc5.frequency.value = freq * 0.125;
-
-                // Gain with smooth linear fade
+                
                 const gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(0.0001, startTime);
-                gain.gain.linearRampToValueAtTime(0.25 / chord.length, startTime + fadeIn);
-
-                // Slow volume LFO
-                const lfo = audioCtx.createOscillator();
-                lfo.frequency.value = 0.02 + Math.random() * 0.05;
-                const lfoGain = audioCtx.createGain();
-                lfoGain.gain.value = 0.15 / chord.length;
-                lfo.connect(lfoGain);
-                lfoGain.connect(gain.gain);
-                lfo.start(startTime);
-
-                // Pitch drift
-                const pitchLFO = audioCtx.createOscillator();
-                pitchLFO.frequency.value = 0.01 + Math.random() * 0.02;
-                const pitchLFOGain = audioCtx.createGain();
-                pitchLFOGain.gain.value = 2;
-                pitchLFO.connect(pitchLFOGain);
-                pitchLFOGain.connect(osc.frequency);
-                pitchLFO.start(startTime);
-
-                // Connect
+                gain.gain.setValueAtTime(0.0001, time);
+                gain.gain.linearRampToValueAtTime(0.15 / chord.length, time + 2);
+                
                 osc.connect(gain);
-                osc2.connect(gain);
-                osc3.connect(gain);
-                osc4.connect(gain);
-                osc5.connect(gain);
                 gain.connect(masterGain);
-
-                // Start all
-                osc.start(startTime);
-                osc2.start(startTime);
-                osc3.start(startTime);
-                osc4.start(startTime);
-                osc5.start(startTime);
-
-                newNodes.push({
-                    osc, osc2, osc3, osc4, osc5,
-                    gain, lfo, lfoGain, pitchLFO, pitchLFOGain
-                });
+                osc.start(time);
+                
+                activeOscs.push({osc, gain});
             });
-
-            // Clean up old nodes after fade out
-            setTimeout(() => {
-                chordNodes.forEach(node => {
-                    try {
-                        node.osc.stop();
-                        node.osc2.stop();
-                        node.osc3.stop();
-                        node.osc4.stop();
-                        node.osc5.stop();
-                        node.lfo.stop();
-                        node.pitchLFO.stop();
-                    } catch(e) {}
-                });
-                chordNodes = newNodes;
-            }, fadeOut * 1000 + 500);
-
-            chordNodes = chordNodes.concat(newNodes);
-            currentChord = chordIndex;
         }
 
+        let currentChord = 0;
         function scheduleChordChange(time) {
             if (!musicPlaying || !audioCtx) return;
-
             const now = audioCtx.currentTime;
             if (time < now) time = now + 5;
-
-            let nextChord;
-            do {
-                nextChord = Math.floor(Math.random() * chordSets.length);
-            } while (nextChord === currentChord);
-
-            playChord(nextChord, time);
-
-            setTimeout(() => {
-                scheduleChordChange(time + 30 + Math.random() * 20);
-            }, (time - now) * 1000);
+            
+            let next;
+            do { next = Math.floor(Math.random() * chordSets.length); } while (next === currentChord);
+            currentChord = next;
+            
+            playChord(next, time);
+            setTimeout(() => scheduleChordChange(time + 20 + Math.random() * 15), (time - now) * 1000);
         }
 
-        function startNoise(startTime) {
-            if (!audioCtx) return;
-
-            const bufferSize = audioCtx.sampleRate * 4;
-            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const noiseData = noiseBuffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                noiseData[i] = (Math.random() * 2 - 1) * 0.3;
-            }
-
-            noiseNode = audioCtx.createBufferSource();
-            noiseNode.buffer = noiseBuffer;
-            noiseNode.loop = true;
-
-            const noiseFilter = audioCtx.createBiquadFilter();
-            noiseFilter.type = 'lowpass';
-            noiseFilter.frequency.value = 50;
-            noiseFilter.Q.value = 0.2;
-
-            noiseGain = audioCtx.createGain();
-            noiseGain.gain.setValueAtTime(0.0001, startTime);
-            noiseGain.gain.linearRampToValueAtTime(0.12, startTime + 3.0);
-
-            const filterLFO = audioCtx.createOscillator();
-            filterLFO.frequency.value = 0.015;
-            const filterLFOGain = audioCtx.createGain();
-            filterLFOGain.gain.value = 25;
-            filterLFO.connect(filterLFOGain);
-            filterLFOGain.connect(noiseFilter.frequency);
-            filterLFO.start(startTime);
-
-            noiseNode.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(masterGain);
-            noiseNode.start(startTime);
+        // ==================== CANVAS STARS ====================
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let streaks = [];
+        let animId;
+        
+        function resize() {
+            canvas.width = window.innerWidth * (window.devicePixelRatio || 1);
+            canvas.height = window.innerHeight * (window.devicePixelRatio || 1);
+            ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
         }
+        resize();
+        window.addEventListener('resize', resize);
 
-        function schedulePulse(time) {
-            if (!musicPlaying || !audioCtx) return;
-
-            const now = audioCtx.currentTime;
-            if (time < now) time = now + 1;
-
-            const baseFreq = 20 + Math.random() * 15;
-            const osc = audioCtx.createOscillator();
-            osc.type = 'sine';
-            osc.frequency.value = baseFreq;
-
-            const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0.0001, time);
-            gain.gain.linearRampToValueAtTime(0.2, time + 0.5);
-            gain.gain.linearRampToValueAtTime(0.0001, time + 4.0);
-
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.value = 60;
-            filter.Q.value = 4;
-
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(masterGain);
-
-            osc.start(time);
-            osc.stop(time + 4.5);
-
-            setTimeout(() => {
-                schedulePulse(time + 4 + Math.random() * 8);
-            }, (time - now) * 1000);
-        }
-
-        function scheduleArpeggio(time) {
-            if (!musicPlaying || !audioCtx) return;
-
-            const now = audioCtx.currentTime;
-            if (time < now) time = now + 1;
-
-            const baseFreq = chordSets[currentChord][0];
-            const pattern = [1, 0.75, 0.5, 0.667, 1, 0.5, 0.75, 1];
-
-            pattern.forEach((mult, i) => {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.value = baseFreq * mult;
-
-                const gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(0.0001, time + i * 1.5);
-                gain.gain.linearRampToValueAtTime(0.06, time + i * 1.5 + 0.5);
-                gain.gain.linearRampToValueAtTime(0.0001, time + i * 1.5 + 4);
-
-                osc.connect(gain);
-                gain.connect(masterGain);
-
-                osc.start(time + i * 1.5);
-                osc.stop(time + i * 1.5 + 4.5);
-            });
-
-            setTimeout(() => {
-                scheduleArpeggio(time + 15 + Math.random() * 15);
-            }, (time - now) * 1000);
-        }
-
-        function dismissPopup() {
-            const overlay = document.getElementById('popupOverlay');
-            overlay.classList.add('hidden');
-            setTimeout(() => {
-                startMusic();
-            }, 300);
-        }
-
-        // ============================================
-        // 3D STARFIELD
-        // ============================================
-        const vortex = document.getElementById('vortex');
-        const starCount = 150;
-        const streakCount = 40;
-        const stars = [];
-        const streaks = [];
-        const fov = 500;
-        const maxZ = 3000;
+        const starCount = isMobile() ? 60 : 120;
+        const streakCount = isMobile() ? 15 : 30;
+        const fov = 400;
+        const maxZ = 2500;
         const minZ = 50;
-        const baseSpeed = 2;
 
         for (let i = 0; i < starCount; i++) {
-            const star = document.createElement('div');
-            star.className = 'star-warp';
-            vortex.appendChild(star);
             const angle = Math.random() * Math.PI * 2;
-            const spread = 1500;
-            const radius = Math.random() * spread + 100;
-            const z = Math.random() * (maxZ - minZ) + minZ;
+            const radius = Math.random() * 1200 + 100;
             stars.push({
-                el: star,
                 x: Math.cos(angle) * radius,
                 y: Math.sin(angle) * radius,
-                z: z,
-                angle: angle,
-                radius: radius,
-                size: Math.random() * 2 + 1,
-                twinkleSpeed: Math.random() * 0.02 + 0.005,
-                twinkleOffset: Math.random() * Math.PI * 2
+                z: Math.random() * (maxZ - minZ) + minZ,
+                size: Math.random() * 1.5 + 0.5,
+                twinkleSpeed: Math.random() * 0.03 + 0.01
             });
         }
 
-        const streakColors = ['streak-purple', 'streak-pink', 'streak-orange', 'streak-white'];
+        const colors = ['#a855f7', '#ec4899', '#f97316', '#ffffff'];
         for (let i = 0; i < streakCount; i++) {
-            const streak = document.createElement('div');
-            streak.className = 'streak ' + streakColors[Math.floor(Math.random() * streakColors.length)];
-            vortex.appendChild(streak);
             const angle = Math.random() * Math.PI * 2;
-            const spread = 1200;
-            const radius = Math.random() * spread + 100;
-            const z = Math.random() * (maxZ - minZ) + minZ;
+            const radius = Math.random() * 1000 + 100;
             streaks.push({
-                el: streak,
                 x: Math.cos(angle) * radius,
                 y: Math.sin(angle) * radius,
-                z: z,
-                angle: angle,
-                radius: radius,
-                length: Math.random() * 80 + 40,
-                speed: Math.random() * 1.5 + 0.5,
-                width: Math.random() * 2 + 1
+                z: Math.random() * (maxZ - minZ) + minZ,
+                length: Math.random() * 60 + 30,
+                speed: Math.random() * 1.2 + 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                width: Math.random() * 1.5 + 0.5
             });
         }
 
         let time = 0;
         function animate() {
-            time += 1;
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-
+            time++;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Stars
             stars.forEach(s => {
-                s.z -= baseSpeed;
+                s.z -= 1.5;
                 if (s.z < minZ) {
                     s.z = maxZ;
-                    s.angle = Math.random() * Math.PI * 2;
-                    s.radius = Math.random() * 1500 + 100;
-                    s.x = Math.cos(s.angle) * s.radius;
-                    s.y = Math.sin(s.angle) * s.radius;
+                    const a = Math.random() * Math.PI * 2;
+                    const r = Math.random() * 1200 + 100;
+                    s.x = Math.cos(a) * r;
+                    s.y = Math.sin(a) * r;
                 }
                 const scale = fov / s.z;
-                const screenX = centerX + (s.x * scale);
-                const screenY = centerY + (s.y * scale);
-                const starSize = s.size * scale;
-                const opacity = Math.min(1, scale * 0.3);
-                const twinkle = Math.sin(time * s.twinkleSpeed + s.twinkleOffset) * 0.3 + 0.7;
-                s.el.style.left = screenX + 'px';
-                s.el.style.top = screenY + 'px';
-                s.el.style.width = Math.max(1, starSize) + 'px';
-                s.el.style.height = Math.max(1, starSize) + 'px';
-                s.el.style.opacity = opacity * twinkle;
-                s.el.style.zIndex = Math.floor(100000 - s.z);
-                s.el.style.transform = 'translate(-50%, -50%)';
+                const sx = cx + s.x * scale;
+                const sy = cy + s.y * scale;
+                const size = s.size * scale;
+                const alpha = Math.min(1, scale * 0.25);
+                const twinkle = Math.sin(time * s.twinkleSpeed) * 0.3 + 0.7;
+                
+                ctx.globalAlpha = alpha * twinkle;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(sx, sy, Math.max(0.5, size), 0, Math.PI * 2);
+                ctx.fill();
             });
-
+            
+            // Streaks
             streaks.forEach(s => {
-                s.z -= baseSpeed * s.speed;
+                s.z -= 1.5 * s.speed;
                 if (s.z < minZ) {
                     s.z = maxZ;
-                    s.angle = Math.random() * Math.PI * 2;
-                    s.radius = Math.random() * 1200 + 100;
-                    s.x = Math.cos(s.angle) * s.radius;
-                    s.y = Math.sin(s.angle) * s.radius;
+                    const a = Math.random() * Math.PI * 2;
+                    const r = Math.random() * 1000 + 100;
+                    s.x = Math.cos(a) * r;
+                    s.y = Math.sin(a) * r;
                 }
                 const scale = fov / s.z;
-                const screenX = centerX + (s.x * scale);
-                const screenY = centerY + (s.y * scale);
-                const streakLength = s.length * scale;
-                const streakWidth = s.width * scale;
-                const opacity = Math.min(0.9, scale * 0.25);
-                const dx = centerX - screenX;
-                const dy = centerY - screenY;
-                const angleToCenter = Math.atan2(dy, dx) * (180 / Math.PI);
-                s.el.style.left = screenX + 'px';
-                s.el.style.top = screenY + 'px';
-                s.el.style.width = Math.max(2, streakLength) + 'px';
-                s.el.style.height = Math.max(1, streakWidth) + 'px';
-                s.el.style.opacity = opacity;
-                s.el.style.zIndex = Math.floor(100000 - s.z);
-                s.el.style.transform = `translate(-50%, -50%) rotate(${angleToCenter}deg)`;
+                const sx = cx + s.x * scale;
+                const sy = cy + s.y * scale;
+                const len = s.length * scale;
+                const width = s.width * scale;
+                const alpha = Math.min(0.8, scale * 0.2);
+                
+                const dx = cx - sx;
+                const dy = cy - sy;
+                const angle = Math.atan2(dy, dx);
+                
+                ctx.globalAlpha = alpha;
+                ctx.strokeStyle = s.color;
+                ctx.lineWidth = Math.max(1, width);
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(sx + Math.cos(angle) * len, sy + Math.sin(angle) * len);
+                ctx.stroke();
             });
-
+            
+            ctx.globalAlpha = 1;
             requestAnimationFrame(animate);
         }
         animate();
+
+        // ==================== POPUP ====================
+        const popupOverlay = document.getElementById('popupOverlay');
+        const popupBtn = document.getElementById('popupBtn');
+        
+        function dismissPopup() {
+            popupOverlay.classList.add('hidden');
+            setTimeout(startMusic, 300);
+        }
+        
+        popupBtn.addEventListener('click', dismissPopup);
+        popupBtn.addEventListener('touchend', (e) => { e.preventDefault(); dismissPopup(); });
+
+        // Auto-dismiss on mobile after 5s if they don't interact
+        if (isMobile()) {
+            setTimeout(() => {
+                if (!popupOverlay.classList.contains('hidden')) {
+                    popupOverlay.classList.add('hidden');
+                }
+            }, 5000);
+        }
     </script>
 </body>
 </html>
