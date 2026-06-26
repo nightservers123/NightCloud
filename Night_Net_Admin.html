@@ -552,7 +552,7 @@
                         <small>When ON, visitors see the maintenance page</small>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="maintenanceToggle" checked>
+                        <input type="checkbox" id="maintenanceToggle">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -563,7 +563,7 @@
                         <small>Enable immersive sound on the maintenance page</small>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="audioToggle" checked>
+                        <input type="checkbox" id="audioToggle">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -574,7 +574,7 @@
                         <small>Show animated 3D starfield background</small>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="animationToggle" checked>
+                        <input type="checkbox" id="animationToggle">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -746,7 +746,9 @@
 
         async function saveSettings(settings) {
             try {
-                await apiPost('/maintenance', settings);
+                console.log('POSTing to /maintenance:', settings);
+                const result = await apiPost('/maintenance', settings);
+                console.log('Save response:', result);
                 showToast();
             } catch(e) {
                 console.error('Failed to save:', e);
@@ -821,12 +823,29 @@
         // ==================== EVENT LISTENERS ====================
 
         // Maintenance toggle
-        document.getElementById('maintenanceToggle').addEventListener('change', async (e) => {
+        // Maintenance toggle - listen on both change and click
+        const maintToggle = document.getElementById('maintenanceToggle');
+        async function handleMaintToggle() {
+            console.log('Toggle clicked, checked:', maintToggle.checked);
             const s = await getSettings();
-            s.maintenanceMode = e.target.checked;
+            console.log('Current settings:', s);
+            s.maintenanceMode = maintToggle.checked;
             updateStatusUI(s.maintenanceMode);
+            console.log('Saving settings:', s);
             await saveSettings(s);
-        });
+            console.log('Settings saved!');
+        }
+        maintToggle.addEventListener('change', handleMaintToggle);
+        // Also listen on the slider span for clicks
+        const maintSlider = maintToggle.parentElement.querySelector('.toggle-slider');
+        if (maintSlider) {
+            maintSlider.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                maintToggle.checked = !maintToggle.checked;
+                handleMaintToggle();
+            });
+        }
 
         // Audio toggle
         document.getElementById('audioToggle').addEventListener('change', async (e) => {
