@@ -492,7 +492,8 @@
             <div class="section">
                 <div class="section-title">Quick Actions</div>
                 <button class="action-btn secondary" id="resetBtn" style="margin-bottom:0.75rem;">Reset to Defaults</button>
-                <button class="action-btn danger" id="turnOffBtn">TURN OFF MAINTENANCE NOW</button>
+                <button class="action-btn danger" id="turnOffBtn" style="margin-bottom:0.75rem;">TURN OFF MAINTENANCE NOW</button>
+                <button class="action-btn" id="forceClearBtn" style="background:linear-gradient(135deg, #f97316 0%, #ef4444 100%); color:#fff;">🧹 FORCE CLEAR (Bypass Everything)</button>
             </div>
         </div>
     </div>
@@ -622,17 +623,18 @@
 
             updateStatusUI(isOn);
 
-            // Save to localStorage as fallback for when API is down
+            // Save to localStorage as fallback
             localStorage.setItem('night_maintenance_mode', isOn ? 'true' : 'false');
             localStorage.setItem('night_maintenance_settings', JSON.stringify(s));
 
+            // ALWAYS try to save to API
             try {
                 await apiPost('/maintenance', s);
-                console.log('Saved successfully');
+                console.log('Saved to API successfully');
                 showToast();
             } catch(err) {
-                console.error('Save failed (API down), saved to localStorage:', err);
-                showToast();
+                console.error('API save failed:', err);
+                alert('⚠️ API save failed, but saved to localStorage. The main site may not update until API is fixed.');
             }
         });
 
@@ -683,24 +685,64 @@
             }
         });
 
-        // EMERGENCY TURN OFF
-        document.getElementById('turnOffBtn').addEventListener('click', async () => {
-            if (confirm('Turn OFF maintenance mode immediately?')) {
+        // FORCE CLEAR - bypasses everything
+        document.getElementById('forceClearBtn').addEventListener('click', async () => {
+            if (confirm('FORCE CLEAR: This will clear API + localStorage + cookies. Are you sure?')) {
+                // Clear localStorage
+                localStorage.removeItem('night_maintenance_mode');
+                localStorage.removeItem('night_maintenance_settings');
+
+                // Try API
                 try {
                     let s = await apiGet('/maintenance');
                     s.maintenanceMode = false;
                     s.lastUpdated = Date.now();
                     await apiPost('/maintenance', s);
+                    console.log('API cleared');
                 } catch(err) {
-                    console.log('API failed, using localStorage');
+                    console.log('API clear failed:', err);
                 }
+
+                // Update UI
+                document.getElementById('maintenanceToggle').checked = false;
+                updateStatusUI(false);
+
+                alert('✅ Maintenance FORCE CLEARED. Refresh your main site now.');
+                showToast();
+            }
+        });
+
+        // EMERGENCY TURN OFF
+        document.getElementById('turnOffBtn').addEventListener('click', async () => {
+            if (confirm('Turn OFF maintenance mode immediately?')) {
+                let apiSuccess = false;
+
+                // Try API first
+                try {
+                    let s = await apiGet('/maintenance');
+                    s.maintenanceMode = false;
+                    s.lastUpdated = Date.now();
+                    await apiPost('/maintenance', s);
+                    apiSuccess = true;
+                    console.log('API: Maintenance turned OFF');
+                } catch(err) {
+                    console.log('API failed:', err);
+                }
+
                 // Always clear localStorage
                 localStorage.setItem('night_maintenance_mode', 'false');
                 localStorage.removeItem('night_maintenance_settings');
+
+                // Update UI
                 document.getElementById('maintenanceToggle').checked = false;
                 updateStatusUI(false);
                 showToast();
-                alert('Maintenance mode is now OFF');
+
+                if (apiSuccess) {
+                    alert('✅ Maintenance mode is now OFF (saved to API)');
+                } else {
+                    alert('⚠️ API failed, but localStorage cleared. Refresh the main site to check.');
+                }
             }
         });
     </script>
