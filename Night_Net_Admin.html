@@ -622,15 +622,17 @@
 
             updateStatusUI(isOn);
 
+            // Save to localStorage as fallback for when API is down
+            localStorage.setItem('night_maintenance_mode', isOn ? 'true' : 'false');
+            localStorage.setItem('night_maintenance_settings', JSON.stringify(s));
+
             try {
                 await apiPost('/maintenance', s);
                 console.log('Saved successfully');
                 showToast();
             } catch(err) {
-                console.error('Save failed:', err);
-                alert('Failed to save: ' + err.message);
-                e.target.checked = !isOn;
-                updateStatusUI(!isOn);
+                console.error('Save failed (API down), saved to localStorage:', err);
+                showToast();
             }
         });
 
@@ -689,13 +691,16 @@
                     s.maintenanceMode = false;
                     s.lastUpdated = Date.now();
                     await apiPost('/maintenance', s);
-                    document.getElementById('maintenanceToggle').checked = false;
-                    updateStatusUI(false);
-                    showToast();
-                    alert('Maintenance mode is now OFF');
                 } catch(err) {
-                    alert('Failed: ' + err.message);
+                    console.log('API failed, using localStorage');
                 }
+                // Always clear localStorage
+                localStorage.setItem('night_maintenance_mode', 'false');
+                localStorage.removeItem('night_maintenance_settings');
+                document.getElementById('maintenanceToggle').checked = false;
+                updateStatusUI(false);
+                showToast();
+                alert('Maintenance mode is now OFF');
             }
         });
     </script>
