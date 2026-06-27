@@ -872,7 +872,7 @@
             { id: 'night-multiplayer', name: 'Night Multiplayer', desc: 'Real-time multiplayer services', icon: '&#128377;&#65039;', status: 'online', url: 'night-multiplayer.html' }
         ];
 
-        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-cloud.nightindustriesservers.workers.dev';
 
         // Maintenance mode check - runs after DOM is ready
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1947,7 +1947,7 @@
 
     <script>
     (function() {
-        const API_URL = 'https://night-net-api.nightindustriesservers.workers.dev';
+        const API_URL = 'https://night-cloud.nightindustriesservers.workers.dev';
         let __maintSettings = null;
         let __audioCtx = null;
         let __audioPlaying = false;
@@ -1956,8 +1956,13 @@
 
         // Check maintenance on load
         const isAdmin = new URLSearchParams(location.search).get('admin') === 'true';
+        let __popupShown = false;
+        let __screenShown = false;
 
         function checkMaintenance() {
+            // Don't check again if already showing
+            if (__popupShown || __screenShown) return;
+
             // Check localStorage first
             const localMaint = localStorage.getItem('night_maintenance_mode');
             if (localMaint === 'true' && !isAdmin) {
@@ -1973,7 +1978,7 @@
                     return r.json();
                 })
                 .then(settings => {
-                    if (settings && settings.maintenanceMode && !isAdmin) {
+                    if (settings && settings.maintenanceMode && !isAdmin && !__popupShown && !__screenShown) {
                         showPopup(settings);
                     }
                 })
@@ -1981,6 +1986,8 @@
         }
 
         function showPopup(settings) {
+            if (__popupShown || __screenShown) return;
+            __popupShown = true;
             __maintSettings = settings;
             const popup = document.getElementById('maintPopup');
             const eta = settings.waitMinutes || 30;
@@ -1992,6 +1999,8 @@
         }
 
         function showMaintScreen() {
+            __popupShown = false;
+            __screenShown = true;
             const popup = document.getElementById('maintPopup');
             const overlay = document.getElementById('maintenanceOverlay');
 
@@ -2052,6 +2061,7 @@
 
         // Continue button - user clicks this to proceed to maintenance screen + triggers audio
         document.getElementById('maintContinueBtn').addEventListener('click', function() {
+            console.log('[Night Net] Continue button clicked');
             showMaintScreen();
         });
 
@@ -2059,16 +2069,27 @@
             if (__audioPlaying) return;
             try {
                 __audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (__audioCtx.state === 'suspended') {
-                    __audioCtx.resume();
-                }
             } catch(e) {
                 console.log('Web Audio not supported');
                 return;
             }
 
+            // Resume if suspended (browser autoplay policy)
+            if (__audioCtx.state === 'suspended') {
+                __audioCtx.resume().then(() => {
+                    console.log('AudioContext resumed');
+                    startMusicLayers();
+                }).catch(e => console.log('Resume failed:', e));
+            } else {
+                startMusicLayers();
+            }
+        }
+
+        function startMusicLayers() {
+            if (!__audioCtx || __audioPlaying) return;
+
             const master = __audioCtx.createGain();
-            master.gain.value = 0.25;
+            master.gain.value = 0.3;
             master.connect(__audioCtx.destination);
             __audioNodes.push(master);
 
@@ -2086,6 +2107,10 @@
                 ci++;
                 __audioTimeouts.push(setTimeout(playChord, 5000));
             }
+            __audioPlaying = true;
+            const status = document.getElementById('audioStatus');
+            if (status) status.style.display = 'block';
+
             playChord();
 
             // Twinkles
@@ -2110,10 +2135,6 @@
                 __audioTimeouts.push(setTimeout(playBass, 3000 + Math.random() * 2000));
             }
             playBass();
-
-            __audioPlaying = true;
-            const status = document.getElementById('audioStatus');
-            if (status) status.style.display = 'block';
         }
 
         function stopAmbientMusic() {
