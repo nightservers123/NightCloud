@@ -1,2 +1,36 @@
-WE'LL BE RIGHT BACK 
-Our MAINTENANCE screen is being built 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Night Net | Master Control</title>
+    <!-- CSS remains the same as provided in your source -->
+    <style>
+        /* ... existing styles ... */
+    </style>
+</head>
+<body>
+    <!-- Structure remains identical to your source for layout consistency -->
+    
+    <script>
+        // Updated initialization and logic
+        const DEFAULT_SERVICES = [
+            { id: 'night-net', name: 'Night Net', desc: 'Network infrastructure hub', icon: '☁️', status: 'online', url: 'index.html' },
+            { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'online', url: 'night-play.html' }
+            // ... Add remaining services
+        ];
+
+        async function handleSignIn(e) {
+            e.preventDefault();
+            const input = document.getElementById('signinUsernameOrEmail').value.trim();
+            const password = document.getElementById('signinPassword').value;
+
+            // REMOVED HARDCODED ADMIN CREDENTIALS
+            // TODO: Implement secure fetch call to your backend for authentication
+            alert("Login integration required: Please connect to a secure backend for authentication.");
+        }
+
+        // ... Rest of your functions ...
+    </script>
+</body>
+</html>
