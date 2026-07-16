@@ -2,35 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Night Net | Master Control</title>
-    <!-- CSS remains the same as provided in your source -->
+    
+    <script>
+        if (localStorage.getItem('night_maintenance_mode') === 'true') {
+            window.location.href = '/maintenance.html';
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* ... existing styles ... */
+        :root { --bg: #0a0a0f; --accent: #00f0ff; }
+        body { background: var(--bg); color: #fff; font-family: 'Orbitron', sans-serif; padding: 20px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
     </style>
 </head>
 <body>
-    <!-- Structure remains identical to your source for layout consistency -->
+    <header>
+        <h1>Night Net Master Control</h1>
+    </header>
     
+    <main class="nav-grid">
+        <a href="night-play.html">Play Mode</a>
+        <a href="night-host.html">Host Mode</a>
+        <a href="night-multiplayer.html">Multiplayer</a>
+        <a href="night-ai.html">AI Terminal</a>
+    </main>
+
     <script>
-        // Updated initialization and logic
-        const DEFAULT_SERVICES = [
-            { id: 'night-net', name: 'Night Net', desc: 'Network infrastructure hub', icon: '☁️', status: 'online', url: 'index.html' },
-            { id: 'night-play', name: 'Night Play', desc: 'Gaming & entertainment', icon: '🎮', status: 'online', url: 'night-play.html' }
-            // ... Add remaining services
-        ];
-
-        async function handleSignIn(e) {
-            e.preventDefault();
-            const input = document.getElementById('signinUsernameOrEmail').value.trim();
-            const password = document.getElementById('signinPassword').value;
-
-            // REMOVED HARDCODED ADMIN CREDENTIALS
-            // TODO: Implement secure fetch call to your backend for authentication
-            alert("Login integration required: Please connect to a secure backend for authentication.");
+        // System initialization
+        async function init() {
+            console.log("Night Net initialized.");
         }
-
-        // ... Rest of your functions ...
+        init();
     </script>
 </body>
 </html>
