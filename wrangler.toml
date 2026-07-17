@@ -1,3 +1,5 @@
 name = "night-net-api"
-main = "maintenance.js"  # Or whichever file contains your primary logic
 compatibility_date = "2026-07-17"
+
+[assets]
+directory = "./NightCloud"
