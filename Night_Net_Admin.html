@@ -7,18 +7,18 @@
     <title>Night Net — Admin Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body {
+        const res = await fetch(API_URL + path, { mode: 'cors' });
             font-family: 'Inter', sans-serif;
             background: #05050a;
             color: #e0e0e5;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
-        }
-
-        .login-screen {
-            position: fixed;
-            top: 0; left: 0;
+       const res = await fetch(API_URL + path, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
             width: 100%; height: 100%;
             background: #05050a;
             z-index: 100;
